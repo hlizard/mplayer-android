@@ -8,3 +8,8 @@ after this you will get libmplayer.so in current folder
 copy this file to libs/armeabi folder of java package 
 also copy all extlib files to libs/armeabi folder
 
+
+this code base should use ffmpeg release/0.7 branch
+if undefined referer 'log2f' when linking, may be you ndk's version dosn't
+contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
+#define log2f(x) (logf(x)*1.4426950408889634f)
