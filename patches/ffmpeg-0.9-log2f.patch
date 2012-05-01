@@ -1,0 +1,25 @@
+diff --git a/Makefile b/Makefile
+index 820baea..ff83d00 100644
+--- a/Makefile
++++ b/Makefile
+@@ -236,6 +236,7 @@ tests/seek_test$(EXESUF): tests/seek_test.o $(FF_DEP_LIBS)
+ tools/lavfi-showfiltfmts$(EXESUF): tools/lavfi-showfiltfmts.o $(FF_DEP_LIBS)
+ 	$(LD) $(FF_LDFLAGS) -o $@ $< $(FF_EXTRALIBS)
+ 
++SRC_PATH_BARE=.
+ include $(SRC_PATH_BARE)/tests/fate.mak
+ include $(SRC_PATH_BARE)/tests/fate2.mak
+ 
+diff --git a/libavcodec/aacsbr.c b/libavcodec/aacsbr.c
+index 866482a..5d4a990 100644
+--- a/libavcodec/aacsbr.c
++++ b/libavcodec/aacsbr.c
+@@ -39,6 +39,8 @@
+ #include <float.h>
+ #include <math.h>
+ 
++#define log2f(x) (logf(x)*1.4426950408889634f)
++
+ #define ENVELOPE_ADJUSTMENT_OFFSET 2
+ #define NOISE_FLOOR_OFFSET 6.0f
+ 

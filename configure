@@ -6592,13 +6592,13 @@ if test "$_faad" = auto ; then
 int main(void) { faacDecHandle testhand; faacDecFrameInfo testinfo;
     testhand = faacDecOpen(); faacDecInit(0, 0, 0, 0, 0); return 0; }
 EOF
-  cc_check -lfaad $_ld_lm && _faad=yes
+  cc_check -lfaad2 $_ld_lm && _faad=yes
 fi
 
 def_faad='#undef CONFIG_FAAD'
 if test "$_faad" = yes ; then
   def_faad='#define CONFIG_FAAD 1'
-  extra_ldflags="$extra_ldflags -lfaad"
+  extra_ldflags="$extra_ldflags -lfaad2"
   codecmodules="faad2 $codecmodules"
 else
   nocodecmodules="faad2 $nocodecmodules"
@@ -7922,7 +7922,7 @@ CFLAGS_STACKREALIGN      = $cflags_stackrealign
 CFLAGS_SVGALIB_HELPER    = $cflags_svgalib_helper
 CFLAGS_TREMOR_LOW        = $cflags_tremor_low
 
-EXTRALIBS          = $extra_ldflags $_ld_static $_ld_lm $extra_libs
+EXTRALIBS          = $extra_ldflags $_ld_static $_ld_lm $extra_libs -L./extlib -lfaad2 -lmpg123 -lsdl-1.2 -lneon -ltag 
 EXTRALIBS_MPLAYER  = $libs_mplayer
 EXTRALIBS_MENCODER = $libs_mencoder
 
