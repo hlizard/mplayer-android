@@ -59,8 +59,9 @@ SRCS_COMMON-$(DVDREAD_INTERNAL)      += libdvdread4/bitreader.c \
 
 SRCS_COMMON-$(FAAD)                  += libmpcodecs/ad_faad.c
 SRCS_COMMON-$(FASTMEMCPY)            += libvo/aclib.c
-SRCS_COMMON-$(FFMPEG)                += av_opts.c                   \
-					libaf/af_lavcresample.c     \
+SRCS_COMMON-$(FFMPEG)                += av_helpers.c                \
+                                        av_opts.c                   \
+                                        libaf/af_lavcresample.c     \
                                         libmpcodecs/ad_ffmpeg.c     \
                                         libmpcodecs/vd_ffmpeg.c     \
                                         libmpcodecs/vf_geq.c        \
@@ -177,11 +178,12 @@ SRCS_COMMON-$(NATIVE_RTSP)           += stream/stream_rtsp.c \
                                         stream/librtsp/rtsp_session.c \
 
 SRCS_COMMON-$(NEED_GETTIMEOFDAY)     += osdep/gettimeofday.c
+SRCS_COMMON-$(NEED_SWAB)             += osdep/swab.c
+SRCS_COMMON-$(NEED_GLOB)             += osdep/glob-win.c
 SRCS_COMMON-$(NEED_MMAP)             += osdep/mmap-os2.c
 SRCS_COMMON-$(NEED_SETENV)           += osdep/setenv.c
 SRCS_COMMON-$(NEED_SHMEM)            += osdep/shmem.c
 SRCS_COMMON-$(NEED_STRSEP)           += osdep/strsep.c
-SRCS_COMMON-$(NEED_SWAB)             += osdep/swab.c
 SRCS_COMMON-$(NEED_VSSCANF)          += osdep/vsscanf.c
 SRCS_COMMON-$(NETWORKING)            += stream/stream_netstream.c \
                                         stream/asf_mmst_streaming.c \
@@ -518,7 +520,9 @@ SRCS_MPLAYER-$(GL_SDL)       += libvo/sdl_common.c
 SRCS_MPLAYER-$(GL_WIN32)     += libvo/w32_common.c
 SRCS_MPLAYER-$(GL_X11)       += libvo/x11_common.c
 SRCS_MPLAYER-$(MATRIXVIEW)   += libvo/vo_matrixview.c libvo/matrixview.c
-SRCS_MPLAYER-$(GUI)          += gui/util/bitmap.c
+SRCS_MPLAYER-$(GUI)          += gui/util/bitmap.c \
+                                gui/util/list.c \
+                                gui/util/string.c
 SRCS_MPLAYER-$(GUI_GTK)      += gui/app.c \
                                 gui/cfg.c \
                                 gui/interface.c \
@@ -542,7 +546,6 @@ SRCS_MPLAYER-$(GUI_GTK)      += gui/app.c \
                                 gui/ui/sub.c \
                                 gui/ui/widgets.c \
                                 gui/util/cut.c \
-                                gui/util/string.c \
                                 gui/wm/ws.c \
                                 gui/wm/wsxdnd.c \
 
@@ -710,30 +713,6 @@ INSTALL_TARGETS-$(MENCODER) += install-mencoder install-mencoder-man
 INSTALL_TARGETS-$(MPLAYER)  += install-mplayer  install-mplayer-man
 
 DIRS =  . \
-        ffmpeg/libavcodec \
-        ffmpeg/libavcodec/alpha \
-        ffmpeg/libavcodec/arm \
-        ffmpeg/libavcodec/bfin \
-        ffmpeg/libavcodec/mlib \
-        ffmpeg/libavcodec/ppc \
-        ffmpeg/libavcodec/sh4 \
-        ffmpeg/libavcodec/sparc \
-        ffmpeg/libavcodec/x86 \
-        ffmpeg/libavformat \
-        ffmpeg/libavutil \
-        ffmpeg/libavutil/arm \
-        ffmpeg/libavutil/bfin \
-        ffmpeg/libavutil/ppc \
-        ffmpeg/libavutil/sh4 \
-        ffmpeg/libavutil/tomi \
-        ffmpeg/libavutil/x86 \
-        ffmpeg/libpostproc \
-        ffmpeg/libswscale \
-        ffmpeg/libswscale/bfin \
-        ffmpeg/libswscale/mlib \
-        ffmpeg/libswscale/ppc \
-        ffmpeg/libswscale/sparc \
-        ffmpeg/libswscale/x86 \
         gui \
         gui/skin \
         gui/ui \
@@ -744,20 +723,14 @@ DIRS =  . \
         input \
         libaf \
         libao2 \
-        libass \
-        libdvdcss \
-        libdvdnav \
-        libdvdnav/vm \
-        libdvdread4 \
         libmenu \
         libmpcodecs \
         libmpcodecs/native \
         libmpdemux \
-        libmpeg2 \
         libvo \
         loader \
-        loader/dshow \
         loader/dmo \
+        loader/dshow \
         loader/wine \
         mp3lib \
         osdep \
@@ -766,16 +739,23 @@ DIRS =  . \
         stream/librtsp \
         stream/realrtsp \
         sub \
-        tremor \
         TOOLS \
         vidix \
+
+ALL_DIRS = $(DIRS) \
+        libass \
+        libdvdcss \
+        libdvdnav \
+        libdvdnav/vm \
+        libdvdread4 \
+        libmpeg2 \
+        tremor \
 
 ALLHEADERS = $(foreach dir,$(DIRS),$(wildcard $(dir)/*.h))
 
 ADDSUFFIXES     = $(foreach suf,$(1),$(addsuffix $(suf),$(2)))
-ADD_ALL_DIRS    = $(call ADDSUFFIXES,$(1),$(DIRS))
+ADD_ALL_DIRS    = $(call ADDSUFFIXES,$(1),$(ALL_DIRS))
 ADD_ALL_EXESUFS = $(1) $(call ADDSUFFIXES,$(EXESUFS_ALL),$(1))
-
 
 
 ###### generic rules #######
@@ -941,16 +921,17 @@ uninstall:
 	rm -f $(foreach lang,$(MAN_LANGS),$(foreach man,mplayer.1 mencoder.1,$(MANDIR)/$(lang)/man1/$(man)))
 
 clean:
+	$(MAKE) -C ffmpeg $@
 	-rm -f $(call ADD_ALL_DIRS,/*.o /*.a /*.ho /*~)
 	-rm -f $(call ADD_ALL_EXESUFS,mplayer mencoder)
 
 distclean: clean testsclean toolsclean driversclean dhahelperclean
+	$(MAKE) -C ffmpeg $@
 	-rm -rf DOCS/tech/doxygen
 	-rm -f $(call ADD_ALL_DIRS,/*.d)
 	-rm -f config.* codecs.conf.h help_mp.h version.h TAGS tags
 	-rm -f $(VIDIX_PCI_FILES)
 	-rm -f $(call ADD_ALL_EXESUFS,codec-cfg cpuinfo)
-	-rm -f ffmpeg/libavutil/avconfig.h ffmpeg/config.*
 
 doxygen:
 	doxygen DOCS/tech/Doxyfile
@@ -1055,7 +1036,7 @@ drivers/radeon_vid.o drivers/rage128_vid.o: CFLAGS += -fomit-frame-pointer -fno-
 
 install-drivers: $(DRIVER_OBJS)
 	-mkdir -p $(MODULES_DIR)
-	install -m 644 $(KERNEL_OBJS) $(MODULES_DIR)
+	$(INSTALL) -m 644 $(KERNEL_OBJS) $(MODULES_DIR)
 	depmod -a
 	-mknod /dev/mga_vid    c 178 0
 	-mknod /dev/tdfx_vid   c 178 0
@@ -1065,14 +1046,14 @@ install-drivers: $(DRIVER_OBJS)
 driversclean:
 	-rm -f $(DRIVER_OBJS) drivers/*~
 
-DHAHELPER_DEPS_FILES = vidix/dhahelper/dhahelper.d vidix/dhahelper/test.d vidix/dhahelperwin/dhahelper.d vidix/dhahelperwin/dhasetup.d
+DHAHELPER_DEP_FILES = vidix/dhahelper/dhahelper.d vidix/dhahelper/test.d vidix/dhahelperwin/dhahelper.d vidix/dhahelperwin/dhasetup.d
 dhahelper: vidix/dhahelper/dhahelper.o vidix/dhahelper/test
 
 vidix/dhahelper/dhahelper.o vidix/dhahelper/test: CFLAGS = $(KERNEL_CFLAGS)
 
 install-dhahelper: vidix/dhahelper/dhahelper.o
 	-mkdir -p $(MODULES_DIR)
-	install -m 644 $< $(MODULES_DIR)
+	$(INSTALL) -m 644 $< $(MODULES_DIR)
 	depmod -a
 	-mknod /dev/dhahelper c 180 0
 
@@ -1104,7 +1085,7 @@ dhahelperclean:
 
 
 
--include $(DEP_FILES) $(DRIVER_DEP_FILES) $(TESTS_DEP_FILES) $(TOOLS_DEP_FILES) $(DHAHELPER_DEPS_FILES)
+-include $(DEP_FILES) $(DRIVER_DEP_FILES) $(TESTS_DEP_FILES) $(TOOLS_DEP_FILES) $(DHAHELPER_DEP_FILES)
 
 .PHONY: all doxygen *install* *tools drivers dhahelper*
 .PHONY: checkheaders *clean tests check_checksums
