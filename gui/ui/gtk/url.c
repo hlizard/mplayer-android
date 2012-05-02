@@ -32,6 +32,8 @@
 #include "gui/app.h"
 #include "gui/ui/gmplayer.h"
 #include "gui/ui/widgets.h"
+#include "gui/util/list.h"
+#include "gui/util/string.h"
 #include "help_mp.h"
 
 GtkWidget * URL = NULL;
@@ -45,9 +47,9 @@ void ShowURLDialogBox( void )
  if ( URL ) gtkActive( URL );
    else URL=create_URL();
 
- if ( URLList )
+ if ( urlList )
   {
-   urlItem * item = URLList;
+   urlItem * item = urlList;
    g_list_free( URLComboEntrys );
    URLComboEntrys=NULL;
    while( item )
@@ -99,9 +101,9 @@ static void on_Button_pressed( GtkButton * button,gpointer user_data )
 
      item=calloc( 1,sizeof( urlItem ) );
      item->url=gstrdup( str );
-     gtkSet( gtkAddURLItem,0,(void *)item );
+     listSet( gtkAddURLItem,item );
 
-     guiSetFilename( guiInfo.Filename,str ); guiInfo.FilenameChanged=1;
+     setdup( &guiInfo.Filename,str ); guiInfo.NewPlay=GUI_FILE_NEW;
      uiEventHandling( evPlayNetwork,0 );
     }
   }

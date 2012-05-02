@@ -25,6 +25,9 @@
 #include "gui/interface.h"
 #include "gui/skin/font.h"
 #include "gui/skin/skin.h"
+#include "gui/util/list.h"
+#include "gui/util/mem.h"
+#include "gui/util/string.h"
 #include "gui/wm/wsxdnd.h"
 #include "widgets.h"
 
@@ -40,12 +43,12 @@ int uiGotoTheNext = 1;
 
 void uiFullScreen(void)
 {
-    if (!guiInfo.MovieWindow && guiInfo.Playing)
+    if (!guiInfo.VideoWindow && guiInfo.Playing)
         return;
 
     if (guiInfo.Playing && guiApp.subWindow.isFullScreen) {
-        guiApp.subWindow.OldWidth  = guiInfo.MovieWidth;
-        guiApp.subWindow.OldHeight = guiInfo.MovieHeight;
+        guiApp.subWindow.OldWidth  = guiInfo.VideoWidth;
+        guiApp.subWindow.OldHeight = guiInfo.VideoHeight;
 
         switch (guiApp.sub.x) {
         case -1:
@@ -173,7 +176,7 @@ void uiChangeSkin(char *name)
 
         if (!menuDrawBuffer) {
             gmp_msg(MSGT_GPLAYER, MSGL_FATAL, MSGTR_NEMDB);
-            guiExit(EXIT_ERROR);
+            mplayer(MPLAYER_EXIT_GUI, EXIT_ERROR, 0);
         }
 
         wsResizeWindow(&guiApp.menuWindow, guiApp.menu.width, guiApp.menu.height);
@@ -217,7 +220,7 @@ void uiChangeSkin(char *name)
 
     if (!mainDrawBuffer) {
         gmp_msg(MSGT_GPLAYER, MSGL_FATAL, MSGTR_NEMDB);
-        guiExit(EXIT_ERROR);
+        mplayer(MPLAYER_EXIT_GUI, EXIT_ERROR, 0);
     }
 
     wsDestroyWindow(&guiApp.mainWindow);
@@ -255,13 +258,13 @@ void uiSetFileName(char *dir, char *name, int type)
         return;
 
     if (!dir)
-        guiSetFilename(guiInfo.Filename, name)
+        setdup(&guiInfo.Filename, name);
     else
-        guiSetDF(guiInfo.Filename, dir, name)
+        setddup(&guiInfo.Filename, dir, name);
 
     guiInfo.StreamType = type;
-    gfree((void **)&guiInfo.AudioFile);
-    gfree((void **)&guiInfo.Subtitlename);
+    nfree(guiInfo.AudioFilename);
+    nfree(guiInfo.SubtitleFilename);
 }
 
 void uiCurr(void)
@@ -285,7 +288,7 @@ void uiCurr(void)
 
     default:
 
-        curr = gtkSet(gtkGetCurrPlItem, 0, NULL);
+        curr = listSet(gtkGetCurrPlItem, NULL);
 
         if (curr) {
             uiSetFileName(curr->path, curr->name, STREAMTYPE_FILE);
@@ -315,23 +318,22 @@ void uiPrev(void)
 #ifdef CONFIG_DVDREAD
     case STREAMTYPE_DVD:
 
-        if (--guiInfo.DVD.current_chapter == 0) {
-            guiInfo.DVD.current_chapter = 1;
+        if (--guiInfo.Chapter == 0) {
+            guiInfo.Chapter = 1;
 
-            if (--guiInfo.DVD.current_title <= 0) {
-                guiInfo.DVD.current_title = 1;
+            if (--guiInfo.Track <= 0) {
+                guiInfo.Track = 1;
                 stop = 1;
             }
         }
 
-        guiInfo.Track = guiInfo.DVD.current_title;
         break;
 #endif
 
 #ifdef CONFIG_VCD
     case STREAMTYPE_VCD:
-        if (--guiInfo.Track == 0) {
-            guiInfo.Track = 1;
+        if (--guiInfo.Track == 1) {
+            guiInfo.Track = 2;
             stop = 1;
         }
         break;
@@ -339,11 +341,12 @@ void uiPrev(void)
 
     default:
 
-        prev = gtkSet(gtkGetPrevPlItem, 0, NULL);
+        prev = listSet(gtkGetPrevPlItem, NULL);
 
         if (prev) {
             uiSetFileName(prev->path, prev->name, STREAMTYPE_FILE);
             uiGotoTheNext = 0;
+            guiInfo.Track--;
             break;
         }
 
@@ -369,29 +372,24 @@ void uiNext(void)
 #ifdef CONFIG_DVDREAD
     case STREAMTYPE_DVD:
 
-        if (guiInfo.DVD.current_chapter++ == guiInfo.DVD.chapters) {
-            guiInfo.DVD.current_chapter = 1;
+        if (guiInfo.Chapter++ == guiInfo.Chapters) {
+            guiInfo.Chapter = 1;
 
-            if (++guiInfo.DVD.current_title > guiInfo.DVD.titles) {
-                guiInfo.DVD.current_title = guiInfo.DVD.titles;
+            if (++guiInfo.Track > guiInfo.Tracks) {
+                guiInfo.Track = guiInfo.Tracks;
                 stop = 1;
             }
         }
 
-        guiInfo.Track = guiInfo.DVD.current_title;
         break;
 #endif
 
 #ifdef CONFIG_VCD
     case STREAMTYPE_VCD:
 
-        if (++guiInfo.Track >= guiInfo.VCDTracks) {
-            guiInfo.Track = guiInfo.VCDTracks;
-
-            if (guiInfo.VCDTracks > 1)
-                guiInfo.Track--;
-
-            stop = 1;
+        if (++guiInfo.Track >= guiInfo.Tracks) {
+            stop = (guiInfo.Track > guiInfo.Tracks);
+            guiInfo.Track = FFMAX(2, guiInfo.Tracks);
         }
 
         break;
@@ -399,11 +397,12 @@ void uiNext(void)
 
     default:
 
-        next = gtkSet(gtkGetNextPlItem, 0, NULL);
+        next = listSet(gtkGetNextPlItem, NULL);
 
         if (next) {
             uiSetFileName(next->path, next->name, STREAMTYPE_FILE);
             uiGotoTheNext = 0;
+            guiInfo.Track++;
             break;
         }
 

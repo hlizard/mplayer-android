@@ -44,7 +44,6 @@
 #include "libmpcodecs/dec_audio.h"
 #include "libmpcodecs/dec_video.h"
 #include "libmpcodecs/dec_teletext.h"
-#include "libmpcodecs/vd_ffmpeg.h"
 
 #ifdef CONFIG_ASS
 #include "libass/ass.h"
@@ -56,6 +55,7 @@
 #if MP_INPUT_BUFFER_PADDING_SIZE < FF_INPUT_BUFFER_PADDING_SIZE
 #error MP_INPUT_BUFFER_PADDING_SIZE is too small!
 #endif
+#include "av_helpers.h"
 #endif
 
 // This is quite experimental, in particular it will mess up the pts values
@@ -328,7 +328,7 @@ sh_audio_t *new_sh_audio_aid(demuxer_t *demuxer, int id, int aid, const char *la
         mp_msg(MSGT_DEMUXER, MSGL_WARN, MSGTR_AudioStreamRedefined, id);
     else {
         sh_audio_t *sh = calloc(1, sizeof(sh_audio_t));
-        mp_msg(MSGT_DEMUXER, MSGL_V, MSGTR_FoundAudioStream, id);
+        mp_msg(MSGT_DEMUXER, MSGL_V, "==> Found audio stream: %d\n", id);
         demuxer->a_streams[id] = sh;
         sh->aid = aid;
         sh->ds = demuxer->audio;
@@ -376,7 +376,7 @@ sh_video_t *new_sh_video_vid(demuxer_t *demuxer, int id, int vid)
         mp_msg(MSGT_DEMUXER, MSGL_WARN, MSGTR_VideoStreamRedefined, id);
     else {
         sh_video_t *sh = calloc(1, sizeof(sh_video_t));
-        mp_msg(MSGT_DEMUXER, MSGL_V, MSGTR_FoundVideoStream, id);
+        mp_msg(MSGT_DEMUXER, MSGL_V, "==> Found video stream: %d\n", id);
         demuxer->v_streams[id] = sh;
         sh->vid = vid;
         sh->ds = demuxer->video;
@@ -477,6 +477,9 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
     init_avcodec();
 
     switch (format) {
+    case MKTAG('M', 'P', '4', 'A'):
+        codec_id = CODEC_ID_AAC;
+        break;
     case MKTAG('M', 'P', '4', 'L'):
         codec_id = CODEC_ID_AAC_LATM;
         break;
@@ -590,6 +593,7 @@ void ds_add_packet(demux_stream_t *ds, demux_packet_t *dp)
             ds_add_packet_internal(ds, dp);
         } else if (parsed_len) {
             demux_packet_t *dp2 = new_demux_packet(parsed_len);
+            if (!dp2) return;
             dp2->pos = dp->pos;
             dp2->pts = dp->pts; // should be parser->pts but that works badly
             memcpy(dp2->buffer, parsed_start, parsed_len);
@@ -605,6 +609,7 @@ void ds_read_packet(demux_stream_t *ds, stream_t *stream, int len,
                     double pts, off_t pos, int flags)
 {
     demux_packet_t *dp = new_demux_packet(len);
+    if (!dp) return;
     len = stream_read(stream, dp->buffer, len);
     resize_demux_packet(dp, len);
     dp->pts = pts;
@@ -710,6 +715,7 @@ int ds_fill_buffer(demux_stream_t *ds)
             ds_parse(ds->sh, &parsed_start, &parsed_len, MP_NOPTS_VALUE, 0);
             if (parsed_len) {
                 demux_packet_t *dp2 = new_demux_packet(parsed_len);
+                if (!dp2) continue;
                 dp2->pts = MP_NOPTS_VALUE;
                 memcpy(dp2->buffer, parsed_start, parsed_len);
                 ds_add_packet_internal(ds, dp2);

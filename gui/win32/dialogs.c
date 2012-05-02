@@ -25,6 +25,7 @@
 #include <commctrl.h>
 #include "path.h"
 #include "gui/interface.h"
+#include "gui/ui/actions.h"
 #include "mp_msg.h"
 #include "help_mp.h"
 #include "mpcommon.h"
@@ -44,13 +45,10 @@ int get_video_colors(sh_video_t *sh_video, const char *item, int *value);
 guiInterface_t guiInfo;
 int addurl = 0;
 
-void guiLoadSubtitle(char *name)
+void mplayerLoadSubtitle(const char *name)
 {
-    if (!guiInfo.Playing)
-    {
-        guiInfo.SubtitleChanged = 1;
-        return;
-    }
+    if (!guiInfo.Playing) return;
+
     if (subdata)
     {
         mp_msg(MSGT_GPLAYER, MSGL_INFO, MSGTR_DeletingSubtitles);
@@ -78,7 +76,7 @@ void guiLoadSubtitle(char *name)
     if (name)
     {
         mp_msg(MSGT_GPLAYER, MSGL_INFO, MSGTR_LoadingSubtitles, name);
-        subdata = sub_read_file(strdup(name), guiInfo.FPS);
+        subdata = sub_read_file(strdup(name), (guiInfo.sh_video ? guiInfo.sh_video->fps : 0));
         if (!subdata) mp_msg(MSGT_GPLAYER, MSGL_ERR, MSGTR_CantLoadSub,name);
         sub_name = (malloc(2 * sizeof(char*))); /* when mplayer will be restarted */
         sub_name[0] = strdup(name);               /* sub_name[0] will be read */
@@ -177,7 +175,7 @@ void display_opensubtitlewindow(gui_t *gui)
     subtitleopen.nMaxFile = MAXFILE;
 
     if(GetOpenFileName(&subtitleopen))
-        guiLoadSubtitle(subtitlefile);
+        mplayerLoadSubtitle(subtitlefile);
 }
 
 static void display_loadplaylistwindow(gui_t *gui)
@@ -662,7 +660,7 @@ static LRESULT CALLBACK SkinBrowserWndProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
 {
     static HWND listbox;
     static char skinspath[MAX_PATH];
-    gui_t* gui = (gui_t*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+    gui_t* mygui = (gui_t*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
     switch (iMsg)
     {
         case WM_CREATE:
@@ -718,9 +716,9 @@ static LRESULT CALLBACK SkinBrowserWndProc(HWND hwnd, UINT iMsg, WPARAM wParam, 
                         strcat(skinspath, skinName);
                         ShowWindow(hwnd, SW_HIDE);
                         Shell_NotifyIcon(NIM_DELETE, &nid);
-                        destroy_window(gui);
-                        create_window(gui, skinspath);
-                        create_subwindow(gui, skinspath);
+                        destroy_window(mygui);
+                        create_window(mygui, skinspath);
+                        create_subwindow(mygui);
                         SendMessage(hwnd, WM_CLOSE, 0, 0); /* Avoid crashing when switching skin */
                     }
                 }
@@ -821,17 +819,17 @@ static LRESULT CALLBACK TitleChapterWndProc(HWND hwnd, UINT iMsg, WPARAM wParam,
                                  NULL);
             SendMessage(chapter, WM_SETFONT, (WPARAM) GetStockObject(DEFAULT_GUI_FONT), 0);
 
-            for (i=0; i<guiInfo.DVD.titles; i++)
+            for (i=0; i<guiInfo.Tracks; i++)
             {
                 /* we have to reverse the order here because of the way CB_INSERTSTRING adds items */
-                sprintf(&titles[i], "%d", guiInfo.DVD.titles - i);
+                sprintf(&titles[i], "%d", guiInfo.Tracks - i);
                 SendDlgItemMessage(hwnd, ID_TITLESEL, CB_INSERTSTRING, 0, (LPARAM) &titles[i]);
             }
             SendDlgItemMessage(hwnd, ID_TITLESEL, CB_SETCURSEL, dvd_title, 0);
 
-            for (j=0; j<guiInfo.DVD.chapters; j++)
+            for (j=0; j<guiInfo.Chapters; j++)
             {
-                sprintf(&chapters[j], "%d", guiInfo.DVD.chapters - j);
+                sprintf(&chapters[j], "%d", guiInfo.Chapters - j);
                 SendDlgItemMessage(hwnd, ID_CHAPTERSEL, CB_INSERTSTRING, 0, (LPARAM) &chapters[j]);
             }
             SendDlgItemMessage(hwnd, ID_CHAPTERSEL, CB_SETCURSEL, dvd_chapter, 0);
@@ -846,10 +844,10 @@ static LRESULT CALLBACK TitleChapterWndProc(HWND hwnd, UINT iMsg, WPARAM wParam,
                     return 0;
                 case ID_OK:
                 {
-                    guiInfo.DVD.current_title = SendMessage(title, CB_GETCURSEL, 0, 0) + 1;
-                    guiInfo.DVD.current_chapter = SendMessage(chapter, CB_GETCURSEL, 0, 0) + 1;
+                    guiInfo.Track = SendMessage(title, CB_GETCURSEL, 0, 0) + 1;
+                    guiInfo.Chapter = SendMessage(chapter, CB_GETCURSEL, 0, 0) + 1;
 
-                    if((guiInfo.DVD.current_title != 0 || guiInfo.DVD.current_chapter != 0))
+                    if((guiInfo.Track != 0 || guiInfo.Chapter != 0))
                     {
                         gui->startplay(gui);
                         DestroyWindow(hwnd);

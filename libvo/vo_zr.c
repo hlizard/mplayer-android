@@ -19,7 +19,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/* $Id: vo_zr.c 33392 2011-05-07 10:59:11Z iive $ */
+/* $Id: vo_zr.c 33928 2011-07-27 13:40:00Z diego $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,13 +106,13 @@ typedef struct {
 
 static zr_info_t zr_info[ZR_MAX_DEVICES] = {
 	{1, 1, 1, -1, -1, 2, {0, 0, 0, 0, 0}, NULL, 0, VIDEO_MODE_AUTO, NULL, 0, 0, 0, 0, 0,
-	0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+         0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}, {{0}}, 0, 0},
 	{1, 1, 1, -1, -1, 2, {0, 0, 0, 0, 0}, NULL, 0, VIDEO_MODE_AUTO, NULL, 0, 0, 0, 0, 0,
-	0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+         0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}, {{0}}, 0, 0},
 	{1, 1, 1, -1, -1, 2, {0, 0, 0, 0, 0}, NULL, 0, VIDEO_MODE_AUTO, NULL, 0, 0, 0, 0, 0,
-	0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+         0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}, {{0}}, 0, 0},
 	{1, 1, 1, -1, -1, 2, {0, 0, 0, 0, 0}, NULL, 0, VIDEO_MODE_AUTO, NULL, 0, 0, 0, 0, 0,
-	0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+         0, NULL, NULL, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, {0}, {0}, {0}, {{0}}, 0, 0}};
 
 
 

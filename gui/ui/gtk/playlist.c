@@ -31,8 +31,10 @@
 #include "help_mp.h"
 #include "stream/stream.h"
 
-#include "gui/interface.h"
+#include "gui/cfg.h"
 #include "gui/ui/widgets.h"
+#include "gui/util/list.h"
+#include "gui/util/mem.h"
 #include "playlist.h"
 #include "tools.h"
 
@@ -156,7 +158,7 @@ void HidePlayList( void )
 {
  if ( !PlayList ) return;
  NrOfSelected=NrOfEntrys=0;
- gfree( (void **)&CLListSelected ); gfree( (void **)&CLFileSelected );
+ nfree( CLListSelected ); nfree( CLFileSelected );
  free( old_path );
  old_path=strdup( current_path );
  gtk_widget_hide( PlayList );
@@ -189,7 +191,7 @@ static void plButtonReleased( GtkButton * button,gpointer user_data )
   case 1: // ok
        {
         int i;
-	if ( plList ) gtkSet( gtkDelPl,0,NULL );
+	if ( plList ) listSet( gtkDelPl,NULL );
 	for ( i=0;i<NrOfSelected;i++ )
 	 {
 	  plItem * item;
@@ -201,13 +203,13 @@ static void plButtonReleased( GtkButton * button,gpointer user_data )
 	  if ( !item->name ) item->name = strdup( text[0] );
 	  item->path=g_filename_from_utf8( text[1], -1, NULL, NULL, NULL );
 	  if ( !item->path ) item->path = strdup( text[1] );
-	  gtkSet( gtkAddPlItem,0,(void*)item );
+	  listSet( gtkAddPlItem,item );
 	 }
 	if ( plCurrent )
 	 {
 	  uiSetFileName( plCurrent->path,plCurrent->name,STREAMTYPE_FILE );
-//	  guiSetDF( guiInfo.Filename,plCurrent->path,plCurrent->name );
-//	  guiInfo.FilenameChanged=1;
+//	  setddup( &guiInfo.Filename,plCurrent->path,plCurrent->name );
+//	  guiInfo.NewPlay=GUI_FILE_NEW;
 //	  guiInfo.StreamType=STREAMTYPE_FILE;
 	 }
        }
@@ -487,7 +489,7 @@ GtkWidget * create_PlayList( void )
   gtk_ctree_expand( GTK_CTREE( CTDirTree ),parent );
   gtk_widget_show( CTDirTree );
 
-  old_path = fsHistory[0];
+  if ( fsHistory[0] ) old_path = g_filename_from_utf8( fsHistory[0], -1, NULL, NULL, NULL );
 
   gtk_clist_set_column_widget( GTK_CLIST( CTDirTree ),0,
     AddLabel( MSGTR_PLAYLIST_DirectoryTree,NULL ) );

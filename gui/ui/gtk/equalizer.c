@@ -29,6 +29,7 @@
 #include "config.h"
 #include "gui/app.h"
 #include "gui/cfg.h"
+#include "gui/interface.h"
 #include "help_mp.h"
 #include "libaf/equalizer.h"
 #include "libavutil/common.h"
@@ -38,6 +39,8 @@
 #include "libmpdemux/stheader.h"
 #include "libmpcodecs/dec_video.h"
 #include "gui/ui/widgets.h"
+#include "gui/util/mem.h"
+#include "gui/util/string.h"
 
 #include "equalizer.h"
 #include "tools.h"
@@ -198,8 +201,8 @@ static gboolean eqHScaleMotion( GtkWidget * widget,GdkEventMotion  * event,gpoin
   {
    int i;
    for ( i=0;i<6;i++ )
-    { eq.channel=i; gtkSet( gtkSetEqualizer,0,&eq ); }
-  } else { eq.channel=Channel; gtkSet( gtkSetEqualizer,0,&eq ); }
+    { eq.channel=i; mplayer( MPLAYER_SET_EQUALIZER,0,&eq ); }
+  } else { eq.channel=Channel; mplayer( MPLAYER_SET_EQUALIZER,0,&eq ); }
 
  return FALSE;
 }
@@ -209,10 +212,10 @@ static gboolean eqVScaleMotion( GtkWidget * widget,GdkEventMotion  * event,gpoin
 
  switch( (int)user_data )
   {
-   case 1: gtkSet( gtkSetContrast,VContrastadj->value,NULL );      break;
-   case 2: gtkSet( gtkSetBrightness,VBrightnessadj->value,NULL );  break;
-   case 3: gtkSet( gtkSetHue,VHueadj->value,NULL );	           break;
-   case 4: gtkSet( gtkSetSaturation,VSaturationadj->value,NULL );  break;
+   case 1: mplayer( MPLAYER_SET_CONTRAST,VContrastadj->value,0 );      break;
+   case 2: mplayer( MPLAYER_SET_BRIGHTNESS,VBrightnessadj->value,0 );  break;
+   case 3: mplayer( MPLAYER_SET_HUE,VHueadj->value,0 );	           break;
+   case 4: mplayer( MPLAYER_SET_SATURATION,VSaturationadj->value,0 );  break;
   }
 
  return FALSE;
@@ -227,16 +230,16 @@ static void eqButtonReleased( GtkButton * button,gpointer user_data )
 	if ( gtk_notebook_get_current_page( GTK_NOTEBOOK( Notebook ) ) == 0 )
 	 {
 	  if ( !guiInfo.Playing || !gtkEnableAudioEqualizer ) break;
-	  gtkSet( gtkSetEqualizer,0,NULL );
+	  mplayer( MPLAYER_SET_EQUALIZER,0,NULL );
 	  eqSetBands( Channel );
 	 }
 	 else
 	  {
 	   if ( !guiInfo.Playing ) break;
-	   gtkSet( gtkSetContrast,0.0f,NULL );
-	   gtkSet( gtkSetBrightness,0.0f,NULL );
-	   gtkSet( gtkSetHue,0.0f,NULL );
-	   gtkSet( gtkSetSaturation,0.0f,NULL );
+	   mplayer( MPLAYER_SET_CONTRAST,0,0 );
+	   mplayer( MPLAYER_SET_BRIGHTNESS,0,0 );
+	   mplayer( MPLAYER_SET_HUE,0,0 );
+	   mplayer( MPLAYER_SET_SATURATION,0,0 );
 	   eqSetBands( Channel );
 	  }
 	break;
@@ -255,10 +258,10 @@ static void eqSelectChannelsListRow( GtkCList * clist,gint row,gint column,GdkEv
  eqSetBands( Channel );
  if ( Channel == -1 )
   {
-   int i,j; equalizer_t eq;
+   unsigned int i,j; equalizer_t eq;
    for ( i=1;i<FF_ARRAY_ELEMS(gtkEquChannels);i++ )
     for ( j=0;j<FF_ARRAY_ELEMS(*gtkEquChannels);j++ )
-     { eq.band=j; eq.channel=i; eq.gain=gtkEquChannels[0][j]; gtkSet( gtkSetEqualizer,0,&eq ); }
+     { eq.band=j; eq.channel=i; eq.gain=gtkEquChannels[0][j]; mplayer( MPLAYER_SET_EQUALIZER,0,&eq ); }
   }
 }
 
@@ -560,12 +563,12 @@ static void ecButtonReleased( GtkButton * button,gpointer user_data )
 {
  if ( (int)user_data )
  { // if you pressed Ok
-  gfree( (void **)&gtkEquChannel1 ); gtkEquChannel1=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel1 ) ) );
-  gfree( (void **)&gtkEquChannel2 ); gtkEquChannel2=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel2 ) ) );
-  gfree( (void **)&gtkEquChannel3 ); gtkEquChannel3=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel3 ) ) );
-  gfree( (void **)&gtkEquChannel4 ); gtkEquChannel4=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel4 ) ) );
-  gfree( (void **)&gtkEquChannel5 ); gtkEquChannel5=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel5 ) ) );
-  gfree( (void **)&gtkEquChannel6 ); gtkEquChannel6=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel6 ) ) );
+  nfree( gtkEquChannel1 ); gtkEquChannel1=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel1 ) ) );
+  nfree( gtkEquChannel2 ); gtkEquChannel2=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel2 ) ) );
+  nfree( gtkEquChannel3 ); gtkEquChannel3=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel3 ) ) );
+  nfree( gtkEquChannel4 ); gtkEquChannel4=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel4 ) ) );
+  nfree( gtkEquChannel5 ); gtkEquChannel5=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel5 ) ) );
+  nfree( gtkEquChannel6 ); gtkEquChannel6=gstrdup( gtk_entry_get_text( GTK_ENTRY( CEChannel6 ) ) );
   eqSetChannelNames();
  }
  HideEquConfig();

@@ -40,6 +40,7 @@
 #include "cpudetect.h"
 #include "help_mp.h"
 #include "mp_msg.h"
+#include "parser-cfg.h"
 #include "sub/spudec.h"
 #include "version.h"
 #include "sub/vobsub.h"
@@ -77,9 +78,9 @@ void print_version(const char* name)
            gCpuCaps.has3DNow, gCpuCaps.has3DNowExt,
            gCpuCaps.hasSSE, gCpuCaps.hasSSE2, gCpuCaps.hasSSSE3);
 #if CONFIG_RUNTIME_CPUDETECT
-    mp_msg(MSGT_CPLAYER,MSGL_V, MSGTR_CompiledWithRuntimeDetection);
+    mp_msg(MSGT_CPLAYER, MSGL_V, "Compiled with runtime CPU detection.\n");
 #else
-    mp_msg(MSGT_CPLAYER,MSGL_V, MSGTR_CompiledWithCPUExtensions);
+    mp_msg(MSGT_CPLAYER, MSGL_V, "Compiled for x86 CPU with extensions:");
 if (HAVE_MMX)
     mp_msg(MSGT_CPLAYER,MSGL_V," MMX");
 if (HAVE_MMX2)
@@ -407,6 +408,19 @@ static void noconfig_all(void)
 #endif /* CONFIG_GUI */
 }
 
+m_config_t *mconfig;
+
+int cfg_inc_verbose(m_option_t *conf)
+{
+    ++verbose;
+    return 0;
+}
+
+int cfg_include(m_option_t *conf, const char *filename)
+{
+    return m_config_parse_config_file(mconfig, filename);
+}
+
 const m_option_t noconfig_opts[] = {
     {"all", noconfig_all, CONF_TYPE_FUNC, CONF_GLOBAL|CONF_NOCFG|CONF_PRE_PARSE, 0, 0, NULL},
     {"system", &disable_system_conf, CONF_TYPE_FLAG, CONF_GLOBAL|CONF_NOCFG|CONF_PRE_PARSE, 0, 1, NULL},
@@ -478,7 +492,7 @@ int common_init(void)
                     free(conf_path);
                     return 0;
                 }
-                mp_msg(MSGT_CPLAYER,MSGL_V,MSGTR_BuiltinCodecsConf);
+                mp_msg(MSGT_CPLAYER, MSGL_V, "Using built-in default codecs.conf.\n");
             }
         }
         free(conf_path);

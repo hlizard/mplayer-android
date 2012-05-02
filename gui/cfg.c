@@ -22,6 +22,8 @@
 
 #include "cfg.h"
 #include "interface.h"
+#include "util/list.h"
+#include "util/string.h"
 
 #include "config.h"
 #include "help_mp.h"
@@ -29,6 +31,7 @@
 #include "libvo/video_out.h"
 #include "libvo/x11_common.h"
 #include "mixer.h"
+#include "mp_core.h"
 #include "mp_msg.h"
 #include "mpcommon.h"
 #include "mplayer.h"
@@ -78,6 +81,7 @@ char *gtkAOSDLDriver;
 #endif
 
 int gtkEnableAudioEqualizer;
+float gtkEquChannels[6][10];
 
 int gtkSubDumpMPSub;
 int gtkSubDumpSrt;
@@ -95,6 +99,12 @@ int gui_main_pos_x = -3;
 int gui_main_pos_y = -3;
 int gui_sub_pos_x  = -3;
 int gui_sub_pos_y  = -3;
+
+int guiWinID = -1;
+
+char *skinName;
+
+char *fsHistory[5];
 
 static const m_option_t gui_opts[] = {
     { "cache",                       &gtkCacheOn,              CONF_TYPE_FLAG,        0,           0,     1,       NULL },
@@ -270,14 +280,14 @@ int cfg_read(void)
 
     if (!gui_conf) {
         gmp_msg(MSGT_GPLAYER, MSGL_FATAL, MSGTR_MemAllocFailed);
-        guiExit(EXIT_ERROR);
+        mplayer(MPLAYER_EXIT_GUI, EXIT_ERROR, 0);
     }
 
     m_config_register_options(gui_conf, gui_opts);
 
     if (!disable_gui_conf && (m_config_parse_config_file(gui_conf, cfg) < 0)) {
         gmp_msg(MSGT_GPLAYER, MSGL_ERR, MSGTR_ConfigFileError);
-// guiExit(1);
+// mplayer(MPLAYER_EXIT_GUI, 1, 0);
     }
 
     free(cfg);
@@ -299,7 +309,7 @@ int cfg_read(void)
             item->path = strdup(tmp);
             gfgets(tmp, 512, f);
             item->name = strdup(tmp);
-            gtkSet(gtkAddPlItem, 0, (void *)item);
+            listSet(gtkAddPlItem, item);
         }
 
         fclose(f);
@@ -322,7 +332,7 @@ int cfg_read(void)
 
             item      = calloc(1, sizeof(urlItem));
             item->url = strdup(tmp);
-            gtkSet(gtkAddURLItem, 0, (void *)item);
+            listSet(gtkAddURLItem, item);
         }
 
         fclose(f);
@@ -414,11 +424,11 @@ int cfg_write(void)
     f   = fopen(cfg, "wt+");
 
     if (f) {
-        while (URLList) {
-            if (URLList->url)
-                fprintf(f, "%s\n", URLList->url);
+        while (urlList) {
+            if (urlList->url)
+                fprintf(f, "%s\n", urlList->url);
 
-            URLList = URLList->next;
+            urlList = urlList->next;
         }
 
         fclose(f);

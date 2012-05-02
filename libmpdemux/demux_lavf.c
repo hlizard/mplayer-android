@@ -27,6 +27,7 @@
 #include "mp_msg.h"
 #include "help_mp.h"
 #include "av_opts.h"
+#include "av_helpers.h"
 
 #include "stream/stream.h"
 #include "aviprint.h"
@@ -139,7 +140,7 @@ static int64_t mp_read_seek(void *opaque, int stream_idx, int64_t ts, int flags)
 static void list_formats(void) {
     AVInputFormat *fmt;
     mp_msg(MSGT_DEMUX, MSGL_INFO, "Available lavf input formats:\n");
-    for (fmt = av_iformat_next(NULL); fmt; av_iformat_next(fmt))
+    for (fmt = av_iformat_next(NULL); fmt; fmt = av_iformat_next(fmt))
         mp_msg(MSGT_DEMUX, MSGL_INFO, "%15s : %s\n", fmt->name, fmt->long_name);
 }
 
@@ -154,7 +155,7 @@ static int lavf_check_file(demuxer_t *demuxer){
         demuxer->priv=calloc(sizeof(lavf_priv_t),1);
     priv= demuxer->priv;
 
-    av_register_all();
+    init_avformat();
 
     if (opt_format) {
         if (strcmp(opt_format, "help") == 0) {
@@ -362,6 +363,9 @@ static void handle_stream(demuxer_t *demuxer, AVFormatContext *avfc, int i) {
                         codec->codec_tag= MKTAG(24, 'R', 'G', 'B');
                 }
             }
+            // mp4v is sometimes also used for files containing e.g. mjpeg
+            if(codec->codec_tag == MKTAG('m', 'p', '4', 'v'))
+                codec->codec_tag= 0;
             if(!codec->codec_tag)
                 codec->codec_tag= av_codec_get_tag(mp_bmp_taglists, codec->codec_id);
             bih->biSize= sizeof(*bih) + codec->extradata_size;

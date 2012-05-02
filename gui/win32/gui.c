@@ -41,7 +41,9 @@
 #include "libvo/video_out.h"
 #include "libmpcodecs/vd.h"
 #include "gui/interface.h"
+#include "gui/ui/actions.h"
 #include "gui/ui/gmplayer.h"
+#include "gui/util/mem.h"
 #include "gui.h"
 #include "dialogs.h"
 
@@ -1117,8 +1119,7 @@ int destroy_window(gui_t *gui)
             DeleteObject(gui->window_priv[i]->bitmap);
         free(gui->window_priv[i]);
     }
-    free(gui->window_priv);
-    gui->window_priv = NULL;
+    nfree(gui->window_priv);
     gui->window_priv_count = 0;
 
     /* destroy the main window */
@@ -1310,7 +1311,7 @@ static int window_render(gui_t *gui, HWND hWnd, HDC hdc, window_priv_t *priv, wi
 }
 
 /* creates the sub (AKA video) window,*/
-int create_subwindow(gui_t *gui, char *skindir)
+int create_subwindow(gui_t *gui)
 {
     HINSTANCE instance = GetModuleHandle(NULL);
     WNDCLASS wc;
@@ -1519,7 +1520,7 @@ int create_window(gui_t *gui, char *skindir)
     return 0;
 }
 
-gui_t *create_gui(char *skindir, char *skinName, void (*playercontrol)(int event))
+gui_t *create_gui(char *skindir, void (*playercontrol)(int event))
 {
     gui_t *gui = calloc(1, sizeof(gui_t));
     char temp[MAX_PATH];
@@ -1539,10 +1540,9 @@ gui_t *create_gui(char *skindir, char *skinName, void (*playercontrol)(int event
     /* create playlist */
     gui->playlist = create_playlist();
 
-    if(!skinName) skinName = strdup("Blue");
     sprintf(temp, "%s\\%s", skindir, skinName);
     if(create_window(gui, temp)) return NULL;
-    if(create_subwindow(gui, temp)) return NULL;
+    if(create_subwindow(gui)) return NULL;
     if(console) console_toggle();
     return gui;
 }

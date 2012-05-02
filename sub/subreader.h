@@ -50,6 +50,7 @@ extern char *sub_cp;
 #define SUB_SUBRIP09 11
 #define SUB_JACOSUB  12
 #define SUB_MPL2     13
+#define SUB_GOOGLE   14
 
 #define MAX_SUBTITLE_FILES 128
 
@@ -91,7 +92,7 @@ extern int fribidi_flip_commas;
 typedef void (*open_sub_func)(char *, float, int);
 typedef int (*open_vob_func)(const char *, const char * const, int, void *);
 
-sub_data* sub_read_file (char *filename, float pts);
+sub_data* sub_read_file (const char *filename, float pts);
 subtitle* subcp_recode (subtitle *sub);
 // enca_fd is the file enca uses to determine the codepage.
 // setting to NULL disables enca.

@@ -17,7 +17,6 @@
  */
 
 #include "config.h"
-#define PTHREAD_CACHE 1
 
 // Initial draft of my new cache system...
 // Note it runs in 2 processes (using fork()), but doesn't require locking!!
@@ -122,8 +121,7 @@ static int cache_read(cache_vars_t *s, unsigned char *buf, int size)
 	if(s->eof) break;
 	if (s->max_filepos == last_max) {
 	    if (sleep_count++ == 10)
-		{// mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not filling, consider increasing -cache and/or -cache-min!\n");
-		}
+	        mp_msg(MSGT_CACHE, MSGL_WARN, "Cache empty, consider increasing -cache and/or -cache-min. [performance issue]\n");
 	} else {
 	    last_max = s->max_filepos;
 	    sleep_count = 0;
@@ -386,8 +384,7 @@ static void dummy_sighandler(int x) {
 static void cache_mainloop(cache_vars_t *s) {
     int sleep_count = 0;
 #if FORKED_CACHE
-    struct sigaction sa = { 0 };
-    sa.sa_handler = SIG_IGN;
+    struct sigaction sa = { .sa_handler = SIG_IGN };
     sigaction(SIGUSR1, &sa, NULL);
 #endif
     do {
@@ -473,20 +470,20 @@ int stream_enable_cache(stream_t *stream,int size,int min,int seek_limit){
         goto err_out;
     }
     // wait until cache is filled at least prefill_init %
- /*   mp_msg(MSGT_CACHE,MSGL_V,"CACHE_PRE_INIT: %"PRId64" [%"PRId64"] %"PRId64"  pre:%d  eof:%d  \n",
-	(int64_t)s->min_filepos,(int64_t)s->read_filepos,(int64_t)s->max_filepos,min,s->eof);*/
+    mp_msg(MSGT_CACHE,MSGL_V,"CACHE_PRE_INIT: %"PRId64" [%"PRId64"] %"PRId64"  pre:%d  eof:%d  \n",
+	(int64_t)s->min_filepos,(int64_t)s->read_filepos,(int64_t)s->max_filepos,min,s->eof);
     while(s->read_filepos<s->min_filepos || s->max_filepos-s->read_filepos<min){
-/*	mp_msg(MSGT_CACHE,MSGL_STATUS,MSGTR_CacheFill,
+	mp_msg(MSGT_CACHE,MSGL_STATUS,MSGTR_CacheFill,
 	    100.0*(float)(s->max_filepos-s->read_filepos)/(float)(s->buffer_size),
 	    (int64_t)s->max_filepos-s->read_filepos
-	);*/
+	);
 	if(s->eof) break; // file is smaller than prefill size
 	if(stream_check_interrupt(PREFILL_SLEEP_TIME)) {
 	  res = 0;
 	  goto err_out;
         }
     }
-    //mp_msg(MSGT_CACHE,MSGL_STATUS,"\n");
+    mp_msg(MSGT_CACHE,MSGL_STATUS,"\n");
     return 1; // parent exits
 
 err_out:
@@ -615,8 +612,7 @@ int cache_do_control(stream_t *stream, int cmd, void *arg) {
   cache_wakeup(stream);
   while (s->control != -1) {
     if (sleep_count++ == 1000)
-      {//mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not responding!\n");
-	}
+      mp_msg(MSGT_CACHE, MSGL_WARN, "Cache not responding! [performance issue]\n");
     if (stream_check_interrupt(CONTROL_SLEEP_TIME)) {
       s->eof = 1;
       return STREAM_UNSUPPORTED;

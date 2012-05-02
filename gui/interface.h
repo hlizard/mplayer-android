@@ -20,6 +20,8 @@
 #define MPLAYER_GUI_INTERFACE_H
 
 #include "config.h"
+#include "libaf/af.h"
+#include "libmpdemux/stheader.h"
 #include "m_config.h"
 #include "mp_core.h"
 #include "playtree.h"
@@ -35,209 +37,119 @@ extern int use_gui;             // this is defined in mplayer.c
 
 #define GMPlayer "gmplayer"
 
-#define GUI_X_EVENT            0
-#define GUI_SET_STATE          1
-#define GUI_RUN_COMMAND        2
-#define GUI_SET_AUDIO          6
-#define GUI_SETUP_VIDEO_WINDOW 8
-#define GUI_SET_STREAM         9
-#define GUI_REDRAW             10
-#define GUI_SET_MIXER          11
-#define GUI_SET_FILE           12
-#define GUI_SET_VIDEO          13
-#define GUI_PREPARE            16
-#define GUI_SET_AFILTER        17
-#define GUI_SET_CONTEXT        18
-#define GUI_END_FILE           19
+// gui() instructions
+enum {
+    GUI_END_FILE,
+    GUI_HANDLE_EVENTS,
+    GUI_HANDLE_X_EVENT,
+    GUI_PREPARE,
+    GUI_REDRAW,
+    GUI_RUN_COMMAND,
+    GUI_SETUP_VIDEO_WINDOW,
+    GUI_SET_AFILTER,
+    GUI_SET_AUDIO,
+    GUI_SET_CONTEXT,
+    GUI_SET_FILE,
+    GUI_SET_MIXER,
+    GUI_SET_STATE,
+    GUI_SET_STREAM,
+    GUI_SET_VIDEO
+};
 
+// Playing states
 #define GUI_STOP  0
 #define GUI_PLAY  1
 #define GUI_PAUSE 2
 
-#define guiDVD       1
-#define guiVCD       2
-#define guiFilenames 4
-#define guiALL       0xffffffff
+// NewPlay reasons
+#define GUI_FILE_SAME 1
+#define GUI_FILE_NEW  2
 
-#define gtkSetContrast      0
-#define gtkSetBrightness    1
-#define gtkSetHue           2
-#define gtkSetSaturation    3
-#define gtkSetEqualizer     4
-#define gtkAddPlItem        5
-#define gtkGetNextPlItem    6
-#define gtkGetPrevPlItem    7
-#define gtkGetCurrPlItem    8
-#define gtkDelPl            9
-#define gtkSetExtraStereo   10
-#define gtkSetPanscan       11
-#define gtkSetFontFactor    12
-#define gtkSetAutoq         13
-#define gtkClearStruct      14
-#define gtkAddURLItem       15
-#define gtkSetFontOutLine   16
-#define gtkSetFontBlur      17
-#define gtkSetFontTextScale 18
-#define gtkSetFontOSDScale  19
-#define gtkSetFontEncoding  20
-#define gtkSetFontAutoScale 21
-#define gtkSetSubEncoding   22
-#define gtkDelCurrPlItem    23
-#define gtkInsertPlItem     24
-#define gtkSetCurrPlItem    25
-
-#define fsPersistant_MaxPos 5
-
-#define guiSetFilename(s, n) \
-    { \
-        free(s); \
-        s = gstrdup(n); \
-    }
-
-#define guiSetDF(s, d, n) \
-    { \
-        free(s); \
-        s = malloc(strlen(d) + strlen(n) + 5); \
-        sprintf(s, "%s/%s", d, n); \
-    }
+// mplayer() instructions
+enum {
+    MPLAYER_EXIT_GUI,
+    MPLAYER_SET_AUTO_QUALITY,
+    MPLAYER_SET_BRIGHTNESS,
+    MPLAYER_SET_CONTRAST,
+    MPLAYER_SET_EQUALIZER,
+    MPLAYER_SET_EXTRA_STEREO,
+    MPLAYER_SET_FONT_AUTOSCALE,
+    MPLAYER_SET_FONT_BLUR,
+    MPLAYER_SET_FONT_ENCODING,
+    MPLAYER_SET_FONT_FACTOR,
+    MPLAYER_SET_FONT_OSDSCALE,
+    MPLAYER_SET_FONT_OUTLINE,
+    MPLAYER_SET_FONT_TEXTSCALE,
+    MPLAYER_SET_HUE,
+    MPLAYER_SET_PANSCAN,
+    MPLAYER_SET_SATURATION,
+    MPLAYER_SET_SUB_ENCODING
+};
 
 typedef struct {
-    int x;
-    int y;
-    int width;
-    int height;
-} guiResizeStruct;
+    MPContext *mpcontext;
+    sh_video_t *sh_video;
+    af_stream_t *afilter;
 
-typedef struct {
-    int signal;
-    char module[512];
-} guiUnknownErrorStruct;
+    int VideoWidth;
+    int VideoHeight;
+    int VideoWindow;
 
-typedef struct {
-    int seek;
-    int format;
-    int width;
-    int height;
-    char codecdll[128];
-} guiVideoStruct;
+    int StreamType;           // public, read access by MPlayer
+    int AudioChannels;
 
 #ifdef CONFIG_DVDREAD
-typedef struct {
-    int titles;
-    int chapters;
-    int angles;
-    int current_chapter;
-    int current_title;
-    int current_angle;
-    int nr_of_audio_channels;
-    stream_language_t audio_streams[32];
-    int nr_of_subtitles;
-    stream_language_t subtitles[32];
-} guiDVDStruct;
+    int AudioStreams;
+    stream_language_t AudioStream[32];
+
+    int Subtitles;
+    stream_language_t Subtitle[32];
 #endif
 
-typedef struct {
-    int message;
-    guiResizeStruct resize;
-    guiVideoStruct videodata;
-    guiUnknownErrorStruct error;
+    char *Filename;           // public, read access by MPlayer
+    char *AudioFilename;
+    char *SubtitleFilename;
 
-    struct MPContext *mpcontext;
-    void *sh_video;
-    void *afilter;
-    void *event_struct;
+#if defined(CONFIG_VCD) || defined(CONFIG_DVDREAD)
+    int Tracks;
+#endif
 
-    int DiskChanged;
-    int NewPlay;
+    int Track;                // public, read access by MPlayer
 
 #ifdef CONFIG_DVDREAD
-    guiDVDStruct DVD;
-    int Title;
+    int Chapters;
+    int Chapter;              // public, write access by MPlayer
+    int Angles;
     int Angle;
-    int Chapter;
 #endif
 
-#ifdef CONFIG_VCD
-    int VCDTracks;
-#endif
+    int Playing;              // public, read access by MPlayer
 
-    int Playing;
-    float Position;
-
-    int MovieWidth;
-    int MovieHeight;
-    int MovieWindow;
+    int RunningTime;          // public, write access by MPlayer
+    int ElapsedTime;          // public, write access by MPlayer
+    float Position;           // public, write access by MPlayer
 
     float Volume;
     float Balance;
 
-    int Track;
-    int AudioChannels;
-    int StreamType;
-    int TimeSec;
-    int LengthInSec;
-    int FrameDrop;
-    float FPS;
-
-    char *Filename;
-    int FilenameChanged;
-
-    char *Subtitlename;
-    int SubtitleChanged;
-
-    char *Othername;
-    int OtherChanged;
-
-    char *AudioFile;
-    int AudioFileChanged;
-
-    int SkinChange;
+    int NewPlay;              // public, read access by MPlayer
 } guiInterface_t;
-
-typedef struct plItem {
-    struct plItem *prev, *next;
-    char *path;
-    char *name;
-} plItem;
-
-typedef struct urlItem {
-    struct urlItem *next;
-    char *url;
-} urlItem;
 
 extern guiInterface_t guiInfo;
 
-extern int guiWinID;
+/* MPlayer -> GUI */
 
-extern char *skinName;
-extern char *skinDirInHome;
-extern char *skinMPlayerDir;
-
-extern plItem *plList;
-extern plItem *plCurrent;
-extern plItem *plLastPlayed;
-
-extern urlItem *URLList;
-
-extern char *fsHistory[fsPersistant_MaxPos];
-
-extern float gtkEquChannels[6][10];
-
-void gaddlist(char ***list, const char *entry);
-void gfree(void **p);
-void gmp_msg(int mod, int lev, const char *format, ...);
-char *gstrchr(char *str, int c);
-int gstrcmp(const char *a, const char *b);
-char *gstrdup(const char *str);
-void *gtkSet(int cmd, float fparam, void *vparam);
+int gui(int what, void *data);
 void guiDone(void);
-void guiEventHandling(void);
-void guiExit(enum exit_reason how);
-int gui(int what, void *arg);
 void guiInit(void);
-void guiLoadFont(void);
-void guiLoadSubtitle(char *name);
-int import_initial_playtree_into_gui(play_tree_t *my_playtree, m_config_t *config, int enqueue);
-int import_playtree_playlist_into_gui(play_tree_t *my_playtree, m_config_t *config);
+int guiPlaylistAdd(play_tree_t *my_playtree, m_config_t *config);
+int guiPlaylistInitialize(play_tree_t *my_playtree, m_config_t *config, int enqueue);
+
+/* GUI -> MPlayer */
+
+void mplayer(int what, float value, void *data);
+void mplayerLoadFont(void);
+void mplayerLoadSubtitle(const char *name);
+void gmp_msg(int mod, int lev, const char *format, ...);
 
 #endif /* MPLAYER_GUI_INTERFACE_H */

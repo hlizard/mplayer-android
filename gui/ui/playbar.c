@@ -26,8 +26,10 @@
 
 #include "config.h"
 #include "gui/app.h"
+#include "gui/interface.h"
 #include "gui/skin/font.h"
 #include "gui/skin/skin.h"
+#include "gui/util/mem.h"
 #include "gui/wm/ws.h"
 
 #include "help_mp.h"
@@ -242,12 +244,12 @@ void uiPlaybarInit( void )
 {
  if ( !guiApp.playbarIsPresent ) return;
 
- gfree( (void**)&playbarDrawBuffer );
+ nfree( playbarDrawBuffer );
 
  if ( ( playbarDrawBuffer = malloc( guiApp.playbar.Bitmap.ImageSize ) ) == NULL )
   {
    gmp_msg( MSGT_GPLAYER,MSGL_FATAL,MSGTR_NEMDB );
-   guiExit( EXIT_ERROR );
+   mplayer( MPLAYER_EXIT_GUI, EXIT_ERROR, 0 );
   }
 
  guiApp.playbarWindow.Parent=guiApp.subWindow.WindowID;

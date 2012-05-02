@@ -26,6 +26,7 @@
 #include <string.h>
 #include <unistd.h>
 
+
 #include "config.h"
 #include "mp_msg.h"
 #include "help_mp.h"
@@ -35,6 +36,8 @@
 
 #include "ad_internal.h"
 
+
+// #include <linux/byteorder/swab.h>
 
 static int isdts = -1;
 
@@ -561,7 +564,7 @@ static int decode_audio_dts(unsigned char *indata_ptr, int len, unsigned char *b
   memcpy(&buf[8], indata_ptr, fsize);
   else
   {
-  swab(indata_ptr, &buf[8], fsize);
+  // swab(indata_ptr, &buf[8], fsize);
   if (fsize & 1) {
     buf[8+fsize-1] = 0;
     buf[8+fsize] = indata_ptr[fsize-1];
