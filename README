@@ -1,25 +1,3 @@
-Android port notes:
-
-modify NDKHOME in confn.sh and cos3.sh
-run conf1.sh
-run make
-run cos3.sh (to test dependencies)
-if no undefined refrences 
-run cos3.sh --shared
-after this you will get libmplayer.so in current folder
-copy this file to libs/armeabi folder of java package 
-also copy all extlib files to libs/armeabi folder
-
-
-this code base should use ffmpeg release/0.7/0.8 branch
-if undefined referer 'log2f' when linking, may be you ndk's version dosn't
-contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
-#define log2f(x) (logf(x)*1.4426950408889634f)
-
-
-
-
-==============================================================================
 Welcome to MPlayer, The Movie Player. MPlayer can play most standard video
 formats out of the box and almost all others with the help of external codecs.
 MPlayer currently works best from the command line, but visual feedback for

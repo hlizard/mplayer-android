@@ -1,0 +1,33 @@
+Android port notes:
+
+modify NDKHOME in confn.sh and cos3.sh
+run conf1.sh
+run make
+run cos3.sh (to test dependencies)
+if no undefined refrences 
+run cos3.sh --shared
+after this you will get libmplayer.so in current folder
+copy this file to libs/armeabi folder of java package 
+also copy all extlib files to libs/armeabi folder
+
+
+this code base should use ffmpeg release/0.7/0.8 branch
+if undefined referer 'log2f' when linking, may be you ndk's version dosn't
+contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
+#define log2f(x) (logf(x)*1.4426950408889634f)
+
+ChangeLog:
+
+2012-05-06
+mplayer-r34007-ffmpeg-0.9 
+        × 必须定义宏 HAVE_YASM ， 否则编译错误并退出， 或许可以使用这个参数，--disable-yasm
+        × 选择定义宏 HAVE_CBRTF， 否则编译过程大量的“警告”信息
+        × 选择定义宏 CONFIG_SAFE_BITSTREAM_READER， 否则编译过程大量的“警告”信息
+        * undefined reference to ff_network_*, ff_tls_*，
+              需要在 mplayer/config.mak加添加一行CONFIG_NETWORK=yes, mplayer/config.h加添宏#define HAVE_NETWORK 1
+        × 由于目前没有openssl库，需要禁用ffmpeg自带的ssl功能，在mplayer/config.mak中添加一行 CONFIG_OPENSSL = no, 在mplayer/config.h #define CONFIG_TLS_PROTOCOL 0
+               --disable-protocol=TLS
+
+        * 从最新的 mplayer-trunk-r34885移植完善了configure脚本，用于使用 --yasm=''的支持，CBRTF检测支持，HAVE_NETWORK宏检测支持, CONFIG_SAFE_BITSTREAM_READER宏的处理。
+
+

@@ -2762,6 +2762,10 @@ inline_asm_check '"":::"%xmm0"' &&
   xmm_clobbers=yes || xmm_clobbers=no
 echores "$xmm_clobbers"
 
+else
+  _yasm=''
+  def_yasm='#define HAVE_YASM 0'
+  have_yasm="no"
 fi #if x86
 
 
@@ -3059,7 +3063,7 @@ fi
 echores "$_kstat"
 
 
-for func in exp2 exp2f llrint llrintf log2 log2f lrint lrintf round roundf trunc truncf; do
+for func in cbrtf exp2 exp2f llrint llrintf log2 log2f lrint lrintf round roundf trunc truncf; do
 echocheck $func
 eval _$func=no
 statement_check math.h "${func}(2.0)" -D_ISOC99_SOURCE && eval _$func=yes
@@ -8115,6 +8119,7 @@ CONFIG_ENCODERS = yes
 CONFIG_GPL      = yes
 CONFIG_MLIB     = $_mlib
 CONFIG_MUXERS   = $_mencoder
+CONFIG_NETWORK  = $networking
 CONFIG_RTPDEC   = $networking
 CONFIG_VDPAU    = $_vdpau
 CONFIG_XVMC     = $_xvmc
@@ -8537,6 +8542,7 @@ $def_arpa_inet_h
 $def_bswap
 $def_bzlib
 $def_dcbzl
+$def_cbrtf
 $def_exp2
 $def_exp2f
 $def_fast_64bit
@@ -8577,6 +8583,8 @@ $def_yasm
 #define CONFIG_GRAY 0
 #define CONFIG_LIBVORBIS 0
 #define CONFIG_POWERPC_PERF 0
+/* For now prefer speed over avoiding potential invalid reads */
+#define CONFIG_SAFE_BITSTREAM_READER 0
 #define CONFIG_SHARED 0
 #define CONFIG_SMALL 0
 #define CONFIG_SWSCALE_ALPHA 1
