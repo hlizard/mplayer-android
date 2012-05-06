@@ -19,6 +19,11 @@ contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
 ChangeLog:
 
 2012-05-06
+mplayer-r34007-ffmpeg-0.10
+        * CONFIG_THUMB 宏的处理。
+        * 添加取音视频编码信息的函数
+
+2012-05-06
 mplayer-r34007-ffmpeg-0.9 
         × 必须定义宏 HAVE_YASM ， 否则编译错误并退出， 或许可以使用这个参数，--disable-yasm
         × 选择定义宏 HAVE_CBRTF， 否则编译过程大量的“警告”信息

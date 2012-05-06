@@ -645,7 +645,7 @@ SRCS_MPLAYER = command.c \
                pnm_loader.c \
                input/input.c \
                libao2/ao_mpegpes.c \
-               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c android-mplayer.c \
+               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c android-mplayer.c mplayer-info.c \
                libao2/ao_pcm.c \
                libao2/audio_out.c \
                libvo/aspect.c \

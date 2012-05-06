@@ -523,10 +523,14 @@ out_eol:
     return RET_EOL;
 }
 
-static codecs_t *video_codecs=NULL;
-static codecs_t *audio_codecs=NULL;
-static int nr_vcodecs = 0;
-static int nr_acodecs = 0;
+// static 
+codecs_t *video_codecs=NULL;
+// static 
+codecs_t *audio_codecs=NULL;
+// static 
+int nr_vcodecs = 0;
+// static 
+int nr_acodecs = 0;
 
 int parse_codec_cfg(const char *cfgfile)
 {
