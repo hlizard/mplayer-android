@@ -1,6 +1,6 @@
-.\" sync with en/mplayer.1 rev. 33893
-.\" This man page was/is done by Gabucino, Diego Biurrun, Jonas Jermann
-.\" translation by JRaSH<jrash06 at 163.com>, currently fixed up to (10016)
+.\" sync with en/mplayer.1 rev. 34821
+.\" MPlayer (C) 2000-2012 MPlayer Team
+.\" This man page was/is translated by JRaSH<jrash06 at gmail.com>
 .
 .\" --------------------------------------------------------------------------
 .\" Macro definitions
@@ -31,7 +31,7 @@
 .\" 标题
 .\" --------------------------------------------------------------------------
 .
-.TH MPlayer 1 "2009-03-25" "MPlayer 项目" "影视播放器"
+.TH MPlayer 1 "2012-03-03" "MPlayer 项目" "影视播放器"
 .
 .SH 名称
 mplayer  \- 影视播放器
@@ -533,6 +533,8 @@ flip=yes
 mf=type=png:fps=25
 # 怪异的负片图像好酷。
 vf=eq2=1.0:\-0.8
+# OSD 播放进度条垂直放置方式
+progbar-align=50
 .fi
 .PP
 .I "MENCODER 配置文件示例："
@@ -2609,6 +2611,11 @@ FreeType 字体的默认路径为：~/.mplayer/\:subfont.ttf)。
 启用该项支持）。
 .
 .TP
+.B \-progbar\-align <0-100>
+指定播放进度条垂直方向放置方式\
+（0：置顶，100：置底，默认值为 50，即居中）。
+.
+.TP
 .B \-sid <代码>（也请参见 \-slang、\-vobsubid）
 显示由 <代码>（0\-31）指定的字幕流。\
 MPlayer 以详细输出模式（\-v）运行时，会打印可用的字幕代码。\
@@ -3026,10 +3033,6 @@ ALSA 0.9/1.x 音频输出驱动
 .PD 1
 .
 .TP
-.B "alsa5\ \ "
-ALSA 0.5 音频输出驱动
-.
-.TP
 .B "oss\ \ \ \ "
 OSS 音频输出驱动
 .PD 0
@@ -3112,10 +3115,14 @@ Mac OS X 自带的音频输出驱动
 PulseAudio 音频输出驱动
 .PD 0
 .RSs
-.IPs "<主机>[:<输出泄漏值>]"
+.IPs "[<主机>[:<输出目标>[:broken_pause]]]"
 指定所使用的主机，并可指定所使用的输出泄漏值。\
 <主机> 字符串为空的话，则使用本地连接。指定“localhost”则使用网络传输\
-（很可能并非所希望的方式）。
+（很可能并非所希望的方式）。\
+还可以明确表明强制使用变通逻辑，以修复存在故障的暂停功能（broken_pause）。\
+（默认值：自动侦测）。\
+如果只需要启用该功能而不指定主机/输出目标，则\
+形式为 \-ao pulse:::broken_pause。
 .RE
 .PD 1
 .
@@ -3462,8 +3469,9 @@ vdpau、x11、xv、xvmc、corevideo）时，坐标是相对于 \-xineramascreen 
 所给屏幕的值。
 .br
 .I 注意：
-该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl2、directx、fbdev、tdfxfb 和 \
-corevideo 视频输出驱动支持。
+该选项仅 x11、xmga、xv、xvmc、xvidix、gl、gl2、direct3d、\
+directx、fbdev、sdl、dfxfb 和 corevideo 视频输出驱动\
+支持。
 .sp 1
 .I 示例：
 .PD 0
@@ -3602,8 +3610,9 @@ ggi 和 gl2 的驱动都支持。
 不知道屏幕分辨率的情况。
 .
 .TP
-.B \-stop\-xscreensaver（仅用于 X11）
-启动时关闭 xscreensaver，退出时再将其打开。\
+.B \-(no)stop\-xscreensaver（仅用于 X11）
+启动时关闭 xscreensaver，并在退出时重新将其开启\
+（默认值：启用）。\
 如果屏保程序不支持 XSS 或 XResetScreenSaver 的 API，\
 请改用 \-heartbeat\-cmd 选项。
 .
@@ -4122,6 +4131,19 @@ OpenGL 视频输出驱动，简单版本。\
 可使用 glxinfo 或类似的工具显示已支持的 OpenGL 扩展功能。
 .PD 0
 .RSs
+.IPs backend=<n>
+选择要使用的后端/OpenGL的实现方式（默认值：-1）。
+.RSss
+-1：自动选择
+.br
+0：Win32/WGL
+.br
+1：X11/GLX
+.br
+2：SDL
+.br
+3：X11/EGL（高度处于实验阶段）
+.RE
 .IPs (no)ati\-hack
 当使用了 PBO 时（当使用了 \-dr 或强制使用 \-pbo 时），\
 AIT 驱动可能输出损坏的图像。\
@@ -4256,9 +4278,13 @@ GL_ARB_fragment_shader！）。\
 详情参见 lscale。
 .IPs filter-strength=<值>
 设置支持强度设置的 lscale/cscale 过滤器的效果强度。
+.IPs noise-strength=<值>
+设置添加多强的噪声信号。0 用于禁止添加信号（默认值），1.0 用于产生适用于\
+抖动降级为 6 比特精度的信号等级。
 .IPs stereo=<值>
 选择用于立体显示的方式。\
 可能需要使用 \-aspect 以修正宽高比的数值。\
+数值加 32 可以实现左右画面对换。
 实验性的选项，勿对其期望太高。
 .RSss
 .IPs 0
@@ -5151,6 +5177,9 @@ all：跳过所有帧。
 .REss
 .IPs vstats
 打印一些统计信息并将其保存至 ./vstats_*.log 中。
+.IPs wait_keyframe
+显示任何内容前等待关键帧出现。\
+防止有些格式下开始播放或定位后帧画面损坏。
 .RE
 .
 .TP
@@ -6076,7 +6105,17 @@ unsigned long long counter   /*用于保持同步, 每当有新
 收集并打印音频流的统计信息，尤其是音量信息。\
 这些统计信息特别用于帮助调节音量\
 以防止削波。\
-音量以 dB 为单位打印并与用于音量的音频过滤器兼容。
+音量以 dB 为单位打印并与用于音量的音频过滤器相兼容，\
+这些数值总是向 -0dB 方向取整。
+.sp 1
+‘n_samples’字段是过滤器读到的采样总数。\
+‘mean_volume’字段是均方值的平方根。\
+‘max_volume’字段的含义与其名完全一致（最大音量）。\
+‘histogram_Xdb’字段统计的是会有多少采样的值是 -XdB，此时 X 为\
+刚好低于最大音量的值。
+.sp 1
+例如，如果 max_volume 为 -7dB 并且 histogram_7dB 为 19，则‘volume=7’不会\
+导致削波，而‘volume=8’将在刚好 19 个采样中导致削波。
 .
 .
 .
@@ -6985,6 +7024,26 @@ softskip 将编码中跳过（丢弃）帧的步骤从过滤器序列之前\
 .TP
 .B lavcdeint（不推荐使用）
 FFmpeg 的解除隔行扫描过滤器，与 \-vf pp=fd 相同
+.
+.TP
+.B lavfi=filtergraph
+包装 FFmpeg libavfilter 接口的过滤器。\
+\fIfiltergraph\fR 定义的是具有单个输入和单个输出的 libavfilter 流程图。\
+参见 http://www.ffmpeg.org/\:libavfilter.html#SEC4 以了解详细信息。
+.sp 1
+有一种特殊情况，如果 \fIfiltergraph\fR 为 \fB$\fIword\fR，那么将\
+使用环境变量 \fIword\fR 的值；当逗号出现在流程图的描述中时，\
+这是有必要的，因为 mplayer 使用这些符号作为过滤器之间的\
+分隔符。
+.sp 1
+.I 注意：
+一般认为该过滤器只用于实验，因为其与其它过滤器交换\
+可能不正常。
+.sp 1
+.I 示例：
+.br
+overlay="movie=$small_video, scale=160:120 [ca]; [in] [ca] overlay=16:8"
+mplayer -vf lavfi='$overlay' $big_video
 .
 .TP
 .B kerndeint[=阈值[:映射[:次序[:锐化[:双向]]]]]
@@ -10580,6 +10639,10 @@ H.264 的量化参数是基于对数尺度的。\
 通常情况下应使用该选项而非 qp。
 .
 .TP
+.B crf_max=<浮点值>
+当使用 CRF 和 VBV 时，限制 RF 最多为该值（可以导致 VBV 下溢！）。
+.
+.TP
 .B pass=<1\-3>
 启用 2 或 3 阶段编码模式。\
 推荐总是以 2 或 3 阶段编码模式编码，因为该模式使比特的\
@@ -10715,7 +10778,7 @@ trellis=0 fast_pskip。\
 .
 .TP
 .B keyint_min=<1\-keyint/2>
-设置 IDR 帧间的最小间隔（默认值：25）。\
+设置 IDR 帧间的最小间隔（默认值：自动）。\
 如果间隔中出现了场景切换，那么切换仍然编码为 I 帧，\
 但不产生新的画面组。\
 在 H.264 中，I 帧并不一定是封闭画面组的边界，\
@@ -10793,6 +10856,39 @@ B2 与前面所述的一样，但 B1 是从 IO 和 B2 预测出来的，\
 必须使用。
 .IPs "none\ "
 禁止使用 B 帧作为引用帧。
+.RE
+.PD 1
+.
+.TP
+.B (no)open_gop
+使用恢复点闭合图像组；只可用于 B 帧。
+.
+.TP
+.B (no)bluray_compat
+启用提供兼容性的破解逻辑以支持蓝光播放。
+.
+.TP
+.B (no)fake_interlaced
+将媒体流标记为隔行扫描模式，但以逐行扫描模式编码。这使编码 25p 和 30p 的蓝光\
+媒体流成为可能。在隔行扫描模式下忽略该选项。
+.
+.TP
+.B frame_packing=<0-5>
+指定立体视频中帧的排列方式。
+.PD 0
+.RSs
+.IPs 0
+花格式交替 - 左右眼画面的像素交替出现。
+.IPs 1
+按列交替 - 左右眼画面按像素列交替排列。
+.IPs 2
+按行交替 - 左右眼画面按像素行交替排列。
+.IPs 3
+边靠边排列 - 左眼画面在左边，右眼画面在右边。
+.IPs 4
+上下排列 - 左眼画面在上面，右眼画面在下边。
+.IPs 5
+按帧交替 - 每帧为单眼的画面。
 .RE
 .PD 1
 .
@@ -10955,9 +11051,9 @@ direct_pred=none 不仅运行速度较慢而且质量也较差。
 .IPs 0
 禁用（运行最快）
 .IPs 1
-盲目模式（质量稍好）
+基于权重的帧引用方式（质量较好）
 .IPs 2
-智能模式（质量最好）
+基于权重的帧引用方式 + 重复输出（质量最好）
 .RE
 .PD 1
 .
@@ -11031,7 +11127,7 @@ p4x4 只在 subq >= 5，并且分辨率低时才推荐使用。
 彻底性运动搜索或多六边形运动搜索的半径（默认值：16）
 .
 .TP
-.B subq=<0\-9>
+.B subq=<0\-11>
 调整亚像素优化质量。\
 该参数控制的是运动估计决策过程中质量与\
 速度间的权衡。\
@@ -11071,7 +11167,11 @@ subq=5 能比 subq=1 多压缩掉 10%。
 .IPs 8
 启用运动矢量的码率失真优化模式，以及 I 帧和 P 帧中的内部预测模式。
 .IPs 9
-启用运动矢量的码率失真优化模式，以及所有帧中的内部预测模式。（最佳）
+启用运动矢量的码率失真优化模式，以及所有帧中的内部预测模式。
+.IPs 10
+量化参数上码率失真模式；需要指定 trellis=2 并且 aq_mode=1 或更高的参数（最佳）。
+.IPs 11
+完全码率失真模式；禁用所有提前终止逻辑。
 .RE
 .PD 1
 .RS
@@ -11254,6 +11354,11 @@ Windows CMD.EXE 的用户如果尝试使用全部 CQM 列表时，\
 才可使用这个参数。
 .
 .TP
+.B (no)cpu_independent
+保证不同的 CPU 下有可重现的输出，而不是当有更好的算法时选择一个\
+不同的算法（默认值：启用）。
+.
+.TP
 .B threads=<0\-16>
 生成线程以在多个 CPU上 并行编码（默认值：0）。\
 该选项对于压缩质量稍有一些影响。\
@@ -11299,14 +11404,30 @@ Windows CMD.EXE 的用户如果尝试使用全部 CQM 列表时，\
 默认行为是使 SPS 和 PPS 在每个 IDR 帧前重复出现。
 .
 .TP
-.B (no)interlaced
-将视频内容作为隔行扫描内容对待。
+.B (no)tff
+启用隔行扫描模式，上半扫描场在前（默认值：禁用）
+.
+.TP
+.B (no)bff
+启用隔行扫描模式，下半扫描场在前（默认值：禁用）
+.
+.TP
+.B nal_hrd=<none|vbr|cbr>
+通知 HRD 信息（需要指定 vbv_bufsize）（默认值：无）。
+.
+.TP
+.B (no)pic_struct
+在图像计时 SEI 中强制使用 pic_struct（默认值：禁用）。
 .
 .TP
 .B (no)constrained_intra
 启用受限制的帧内预测模式（默认值：禁用）。\
 该选项稍稍降低压缩率，但对于 SVC 编码中的\
 基础编码层次是必须的。
+.
+.TP
+.B output_csp=<i420|i422|i444|rgb>
+指定输出信号的色彩空间（默认值：i420）。
 .
 .TP
 .B (no)aud
@@ -12193,7 +12314,7 @@ rar p test-SVCD.rar | mencoder \-ovc lavc \-lavcopts vcodec=mpeg4:vbitrate=800 \
 MPlayer 最初由 Arpad Gereoffy 制作。\
 参见 AUTHORS 文件以查看其它众多贡献者的部分列表。
 .PP
-MPlayer 为 (C) 2000\-2011 MPlayer 团队所有
+MPlayer 为 (C) 2000\-2012 MPlayer 团队所有
 .PP
 本（英文）手册主要由 Gabucino、Jonas Jermann 和 Diego Biurrun 编写，\
 由 Diego Biurrun 维护。中文版由 JRaSH <jrash06 AT 163.com> 翻译。\

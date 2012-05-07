@@ -37,7 +37,7 @@ extern int use_gui;             // this is defined in mplayer.c
 
 #define GMPlayer "gmplayer"
 
-// gui() instructions
+/// gui() instructions
 enum {
     GUI_END_FILE,
     GUI_HANDLE_EVENTS,
@@ -45,27 +45,31 @@ enum {
     GUI_PREPARE,
     GUI_REDRAW,
     GUI_RUN_COMMAND,
+    GUI_RUN_MESSAGE,
     GUI_SETUP_VIDEO_WINDOW,
     GUI_SET_AFILTER,
     GUI_SET_AUDIO,
     GUI_SET_CONTEXT,
-    GUI_SET_FILE,
     GUI_SET_MIXER,
     GUI_SET_STATE,
     GUI_SET_STREAM,
     GUI_SET_VIDEO
 };
 
-// Playing states
+//@{
+/// Playing state
 #define GUI_STOP  0
 #define GUI_PLAY  1
 #define GUI_PAUSE 2
+//@}
 
-// NewPlay reasons
+//@{
+/// NewPlay reason
 #define GUI_FILE_SAME 1
 #define GUI_FILE_NEW  2
+//@}
 
-// mplayer() instructions
+/// mplayer() instructions
 enum {
     MPLAYER_EXIT_GUI,
     MPLAYER_SET_AUTO_QUALITY,
@@ -91,37 +95,29 @@ typedef struct {
     sh_video_t *sh_video;
     af_stream_t *afilter;
 
+    int VideoWindow;
     int VideoWidth;
     int VideoHeight;
-    int VideoWindow;
 
-    int StreamType;           // public, read access by MPlayer
+    int StreamType;
     int AudioChannels;
 
-#ifdef CONFIG_DVDREAD
     int AudioStreams;
     stream_language_t AudioStream[32];
 
     int Subtitles;
     stream_language_t Subtitle[32];
-#endif
 
     char *Filename;           // public, read access by MPlayer
     char *AudioFilename;
     char *SubtitleFilename;
 
-#if defined(CONFIG_VCD) || defined(CONFIG_DVDREAD)
     int Tracks;
-#endif
-
     int Track;                // public, read access by MPlayer
-
-#ifdef CONFIG_DVDREAD
     int Chapters;
     int Chapter;              // public, write access by MPlayer
     int Angles;
     int Angle;
-#endif
 
     int Playing;              // public, read access by MPlayer
 
@@ -137,19 +133,21 @@ typedef struct {
 
 extern guiInterface_t guiInfo;
 
-/* MPlayer -> GUI */
-
+/// @name MPlayer -> GUI
+//@{
 int gui(int what, void *data);
 void guiDone(void);
 void guiInit(void);
 int guiPlaylistAdd(play_tree_t *my_playtree, m_config_t *config);
 int guiPlaylistInitialize(play_tree_t *my_playtree, m_config_t *config, int enqueue);
+//@}
 
-/* GUI -> MPlayer */
-
+/// @name GUI -> MPlayer
+//@{
 void mplayer(int what, float value, void *data);
 void mplayerLoadFont(void);
 void mplayerLoadSubtitle(const char *name);
 void gmp_msg(int mod, int lev, const char *format, ...);
+//@}
 
 #endif /* MPLAYER_GUI_INTERFACE_H */

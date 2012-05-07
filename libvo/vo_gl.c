@@ -118,6 +118,7 @@ static int is_yuv;
 static int lscale;
 static int cscale;
 static float filter_strength;
+static float noise_strength;
 static int yuvconvtype;
 static int use_rectangle;
 static int err_shown;
@@ -150,6 +151,7 @@ static int custom_tlin;
 static int custom_trect;
 static int mipmap_gen;
 static int stereo_mode;
+static enum MPGLType backend;
 
 static int int_pause;
 static int eq_bri = 0;
@@ -171,6 +173,13 @@ static unsigned int slice_height = 1;
 static void redraw(void);
 
 static void resize(int x,int y){
+  // simple orthogonal projection for 0-image_width;0-image_height
+  float matrix[16] = {
+    2.0/image_width,   0, 0, 0,
+    0, -2.0/image_height, 0, 0,
+    0, 0, 0, 0,
+    -1, 1, 0, 1
+  };
   mp_msg(MSGT_VO, MSGL_V, "[gl] Resize: %dx%d\n",x,y);
   if (WinID >= 0) {
     int left = 0, top = 0, w = x, h = y;
@@ -181,7 +190,6 @@ static void resize(int x,int y){
     mpglViewport( 0, 0, x, y );
 
   mpglMatrixMode(GL_PROJECTION);
-  mpglLoadIdentity();
   ass_border_x = ass_border_y = 0;
   if (aspect_scaling() && use_aspect) {
     int new_w, new_h;
@@ -192,11 +200,14 @@ static void resize(int x,int y){
     new_h += vo_panscan_y;
     scale_x = (GLdouble)new_w / (GLdouble)x;
     scale_y = (GLdouble)new_h / (GLdouble)y;
-    mpglScaled(scale_x, scale_y, 1);
+    matrix[0]  *= scale_x;
+    matrix[12] *= scale_x;
+    matrix[5]  *= scale_y;
+    matrix[13] *= scale_y;
     ass_border_x = (vo_dwidth - new_w) / 2;
     ass_border_y = (vo_dheight - new_h) / 2;
   }
-  mpglOrtho(0, image_width, image_height, 0, -1,1);
+  mpglLoadMatrixf(matrix);
 
   mpglMatrixMode(GL_MODELVIEW);
   mpglLoadIdentity();
@@ -240,7 +251,7 @@ static void update_yuvconv(void) {
   float bgamma = exp(log(8.0) * eq_bgamma / 100.0);
   gl_conversion_params_t params = {gl_target, yuvconvtype,
       {colorspace, levelconv, bri, cont, hue, sat, rgamma, ggamma, bgamma, 0},
-      texture_width, texture_height, 0, 0, filter_strength};
+      texture_width, texture_height, 0, 0, filter_strength, noise_strength};
   mp_get_chroma_shift(image_format, &xs, &ys, &depth);
   params.chrom_texw = params.texw >> xs;
   params.chrom_texh = params.texh >> ys;
@@ -537,7 +548,8 @@ static int initGl(uint32_t d_width, uint32_t d_height) {
   mpglDepthMask(GL_FALSE);
   mpglDisable(GL_CULL_FACE);
   mpglEnable(gl_target);
-  mpglDrawBuffer(vo_doublebuffering?GL_BACK:GL_FRONT);
+  if (mpglDrawBuffer)
+    mpglDrawBuffer(vo_doublebuffering?GL_BACK:GL_FRONT);
   mpglTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
   mp_msg(MSGT_VO, MSGL_V, "[gl] Creating %dx%d texture...\n",
@@ -607,6 +619,13 @@ static int create_window(uint32_t d_width, uint32_t d_height, uint32_t flags, co
 #ifdef CONFIG_GL_WIN32
   if (glctx.type == GLTYPE_W32 && !vo_w32_config(d_width, d_height, flags))
     return -1;
+#endif
+#ifdef CONFIG_GL_EGL_X11
+  if (glctx.type == GLTYPE_EGL_X11) {
+    XVisualInfo vinfo = { .visual = CopyFromParent, .depth = CopyFromParent };
+    vo_x11_create_vo_window(&vinfo, vo_dx, vo_dy, d_width, d_height, flags,
+            CopyFromParent, "gl", title);
+  }
 #endif
 #ifdef CONFIG_GL_X11
   if (glctx.type == GLTYPE_X11) {
@@ -774,10 +793,16 @@ static void do_render_osd(int type) {
     return;
   // set special rendering parameters
   if (!scaled_osd) {
+    // simple orthogonal projection for 0-vo_dwidth;0-vo_dheight
+    float matrix[16] = {
+      2.0/vo_dwidth,   0, 0, 0,
+      0, -2.0/vo_dheight, 0, 0,
+      0,  0, 0, 0,
+      -1, 1, 0, 1
+    };
     mpglMatrixMode(GL_PROJECTION);
     mpglPushMatrix();
-    mpglLoadIdentity();
-    mpglOrtho(0, vo_dwidth, vo_dheight, 0, -1, 1);
+    mpglLoadMatrixf(matrix);
   }
   mpglEnable(GL_BLEND);
   if (draw_eosd) {
@@ -819,7 +844,7 @@ static void do_render(void) {
 //  Enable(GL_TEXTURE_2D);
 //  BindTexture(GL_TEXTURE_2D, texture_id);
 
-  mpglColor3f(1,1,1);
+  mpglColor4f(1,1,1,1);
   if (is_yuv || custom_prog)
     glEnableYUVConversion(gl_target, yuvconvtype);
   if (stereo_mode) {
@@ -940,13 +965,15 @@ static uint32_t get_image(mp_image_t *mpi) {
   if (is_yuv) {
     // planar YUV
     int xs, ys;
-    mp_get_chroma_shift(image_format, &xs, &ys, NULL);
+    int bpp;
+    mp_get_chroma_shift(image_format, &xs, &ys, &bpp);
+    bpp = (bpp + 7) / 8;
     mpi->flags |= MP_IMGFLAG_COMMON_STRIDE | MP_IMGFLAG_COMMON_PLANE;
-    mpi->stride[0] = mpi->width;
+    mpi->stride[0] = mpi->width * bpp;
     mpi->planes[1] = mpi->planes[0] + mpi->stride[0] * mpi->height;
-    mpi->stride[1] = mpi->width >> xs;
+    mpi->stride[1] = (mpi->width >> xs) * bpp;
     mpi->planes[2] = mpi->planes[1] + mpi->stride[1] * (mpi->height >> ys);
-    mpi->stride[2] = mpi->width >> xs;
+    mpi->stride[2] = mpi->stride[1];
     if (ati_hack && !mesa_buffer) {
       mpi->flags &= ~MP_IMGFLAG_COMMON_PLANE;
       if (!gl_buffer_uv[0]) mpglGenBuffers(2, gl_buffer_uv);
@@ -996,19 +1023,23 @@ static uint32_t draw_image(mp_image_t *mpi) {
   mpi2.flags = 0; mpi2.type = MP_IMGTYPE_TEMP;
   mpi2.width = mpi2.w; mpi2.height = mpi2.h;
   if (force_pbo && !(mpi->flags & MP_IMGFLAG_DIRECT) && !gl_bufferptr && get_image(&mpi2) == VO_TRUE) {
-    int bpp = is_yuv ? 8 : mpi->bpp;
+    int bpp;
+    int line_bytes, line_bytes_c;
     int xs, ys;
-    mp_get_chroma_shift(image_format, &xs, &ys, NULL);
-    memcpy_pic(mpi2.planes[0], mpi->planes[0], mpi->w * bpp / 8, mpi->h, mpi2.stride[0], mpi->stride[0]);
+    mp_get_chroma_shift(image_format, &xs, &ys, &bpp);
+    bpp = is_yuv ? (bpp + 7) & ~7 : mpi->bpp;
+    line_bytes = mpi->w * bpp / 8;
+    line_bytes_c = (mpi->w >> xs) * bpp / 8;
+    memcpy_pic(mpi2.planes[0], mpi->planes[0], line_bytes, mpi->h, mpi2.stride[0], mpi->stride[0]);
     if (is_yuv) {
-      memcpy_pic(mpi2.planes[1], mpi->planes[1], mpi->w >> xs, mpi->h >> ys, mpi2.stride[1], mpi->stride[1]);
-      memcpy_pic(mpi2.planes[2], mpi->planes[2], mpi->w >> xs, mpi->h >> ys, mpi2.stride[2], mpi->stride[2]);
+      memcpy_pic(mpi2.planes[1], mpi->planes[1], line_bytes_c, mpi->h >> ys, mpi2.stride[1], mpi->stride[1]);
+      memcpy_pic(mpi2.planes[2], mpi->planes[2], line_bytes_c, mpi->h >> ys, mpi2.stride[2], mpi->stride[2]);
     }
     if (ati_hack) { // since we have to do a full upload we need to clear the borders
-      clear_border(mpi2.planes[0], mpi->w * bpp / 8, mpi2.stride[0], mpi->h, mpi2.height, 0);
+      clear_border(mpi2.planes[0], line_bytes, mpi2.stride[0], mpi->h, mpi2.height, 0);
       if (is_yuv) {
-        clear_border(mpi2.planes[1], mpi->w >> xs, mpi2.stride[1], mpi->h >> ys, mpi2.height >> ys, 128);
-        clear_border(mpi2.planes[2], mpi->w >> xs, mpi2.stride[2], mpi->h >> ys, mpi2.height >> ys, 128);
+        clear_border(mpi2.planes[1], line_bytes_c, mpi2.stride[1], mpi->h >> ys, mpi2.height >> ys, 128);
+        clear_border(mpi2.planes[2], line_bytes_c, mpi2.stride[2], mpi->h >> ys, mpi2.height >> ys, 128);
       }
     }
     mpi = &mpi2;
@@ -1113,6 +1144,12 @@ uninit(void)
   uninit_mpglcontext(&glctx);
 }
 
+static int valid_backend(void *p)
+{
+  int *backend = p;
+  return *backend >= GLTYPE_AUTO && *backend < GLTYPE_COUNT;
+}
+
 static int valid_csp(void *p)
 {
   int *csp = p;
@@ -1139,6 +1176,7 @@ static const opt_t subopts[] = {
   {"lscale",       OPT_ARG_INT,  &lscale,       int_non_neg},
   {"cscale",       OPT_ARG_INT,  &cscale,       int_non_neg},
   {"filter-strength", OPT_ARG_FLOAT, &filter_strength, NULL},
+  {"noise-strength", OPT_ARG_FLOAT, &noise_strength, NULL},
   {"ati-hack",     OPT_ARG_BOOL, &ati_hack,     NULL},
   {"force-pbo",    OPT_ARG_BOOL, &force_pbo,    NULL},
   {"mesa-buffer",  OPT_ARG_BOOL, &mesa_buffer,  NULL},
@@ -1151,13 +1189,14 @@ static const opt_t subopts[] = {
   {"mipmapgen",    OPT_ARG_BOOL, &mipmap_gen,   NULL},
   {"osdcolor",     OPT_ARG_INT,  &osd_color,    NULL},
   {"stereo",       OPT_ARG_INT,  &stereo_mode,  NULL},
+  {"backend",      OPT_ARG_INT,  &backend,      valid_backend},
   {NULL}
 };
 
 static int preinit_internal(const char *arg, int allow_sw)
 {
     // set defaults
-    enum MPGLType gltype = GLTYPE_AUTO;
+    backend = GLTYPE_AUTO;
     many_fmts = 1;
     use_osd = -1;
     scaled_osd = 0;
@@ -1169,6 +1208,7 @@ static int preinit_internal(const char *arg, int allow_sw)
     lscale = 0;
     cscale = 0;
     filter_strength = 0.5;
+    noise_strength = 0.0;
     use_rectangle = -1;
     use_glFinish = 0;
     ati_hack = -1;
@@ -1244,6 +1284,8 @@ static int preinit_internal(const char *arg, int allow_sw)
               "    as lscale but for chroma (2x slower with little visible effect).\n"
               "  filter-strength=<value>\n"
               "    set the effect strength for some lscale/cscale filters\n"
+              "  noise-strength=<value>\n"
+              "    set how much noise to add. 1.0 is suitable for dithering to 6 bit.\n"
               "  customprog=<filename>\n"
               "    use a custom YUV conversion program\n"
               "  customtex=<filename>\n"
@@ -1256,15 +1298,21 @@ static int preinit_internal(const char *arg, int allow_sw)
               "    generate mipmaps for the video image (use with TXB in customprog)\n"
               "  osdcolor=<0xAARRGGBB>\n"
               "    use the given color for the OSD\n"
-              "  stereo=<n>\n"
+              "  stereo=<n> (add 32 to swap left and right)\n"
               "    0: normal display\n"
               "    1: side-by-side to red-cyan stereo\n"
               "    2: side-by-side to green-magenta stereo\n"
               "    3: side-by-side to quadbuffer stereo\n"
+              "  backend=<n>\n"
+              "   -1: auto-select\n"
+              "    0: Win32/WGL\n"
+              "    1: X11/GLX\n"
+              "    2: SDL\n"
+              "    3: X11/EGL (experimental)\n"
               "\n" );
       return -1;
     }
-    if (!init_mpglcontext(&glctx, gltype))
+    if (!init_mpglcontext(&glctx, backend))
       goto err_out;
     if (use_yuv == -1 || !allow_sw) {
       if (create_window(320, 200, VOFLAG_HIDDEN, NULL) < 0)

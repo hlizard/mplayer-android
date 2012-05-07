@@ -28,9 +28,8 @@
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
 #include <X11/Xatom.h>
+#ifdef HAVE_SHM
 #include <X11/extensions/XShm.h>
-#ifdef CONFIG_XDPMS
-#include <X11/extensions/dpms.h>
 #endif
 
 #define  wsKeyReleased   0
@@ -149,7 +148,7 @@ typedef struct {
     int Control;
     int NumLock;
     int CapsLock;
-// --- Misc -------------------------------------------------------------------------------------
+/* Misc ------------------------------------------------------------------------------------- */
 
     Atom AtomDeleteWindow;
     Atom AtomTakeFocus;
@@ -161,7 +160,9 @@ typedef struct {
     Atom AtomWMSizeHint;
     Atom AtomWMNormalHint;
 
+#ifdef HAVE_SHM
     XShmSegmentInfo Shminfo;
+#endif
     unsigned char *ImageData;
     unsigned short int *ImageDataw;
     unsigned int *ImageDatadw;
@@ -216,6 +217,7 @@ int wsGetDepthOnScreen(void);
 
 void wsDoExit(void);
 void wsMainLoop(void);
+void wsAutohideCursor(void);
 Bool wsEvents(Display *display, XEvent *Event);
 void wsHandleEvents(void);
 
@@ -229,10 +231,11 @@ void wsHandleEvents(void);
 // ----------------------------------------------------------------------------------------------
 void wsCreateWindow(wsTWindow *win, int X, int Y, int wX, int hY, int bW, int cV, unsigned char D, char *label);
 void wsDestroyWindow(wsTWindow *win);
-void wsMoveWindow(wsTWindow *win, int b, int x, int y);
+void wsMoveWindow(wsTWindow *win, Bool abs, int x, int y);
+void wsMoveWindowWithin(wsTWindow *win, Bool abs, int x, int y);
 void wsResizeWindow(wsTWindow *win, int sx, int sy);
 void wsIconify(wsTWindow win);
-void wsMoveTopWindow(Display *wsDisplay, Window win);
+void wsRaiseWindowTop(Display *dpy, Window win);
 void wsSetBackground(wsTWindow *win, int color);
 void wsSetForegroundRGB(wsTWindow *win, int r, int g, int b);
 void wsSetBackgroundRGB(wsTWindow *win, int r, int g, int b);
@@ -244,7 +247,7 @@ void wsSetLayer(Display *wsDisplay, Window win, int layer);
 void wsFullScreen(wsTWindow *win);
 void wsPostRedisplay(wsTWindow *win);
 void wsSetShape(wsTWindow *win, char *data);
-void wsSetIcon(Display *dsp, Window win, guiIcon_t *icon);
+void wsSetIcon(Display *dpy, Window win, guiIcon_t *icon);
 
 // ----------------------------------------------------------------------------------------------
 //    Draw string at x,y with fc ( foreground color ) and bc ( background color ).

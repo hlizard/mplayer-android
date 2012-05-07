@@ -44,11 +44,7 @@
 #include "libmpcodecs/dec_audio.h"
 #include "libmpcodecs/dec_video.h"
 #include "libmpcodecs/dec_teletext.h"
-
-#ifdef CONFIG_ASS
-#include "libass/ass.h"
 #include "sub/ass_mp.h"
-#endif
 
 #ifdef CONFIG_FFMPEG
 #include "libavcodec/avcodec.h"
@@ -57,6 +53,7 @@
 #endif
 #include "av_helpers.h"
 #endif
+#include "libavutil/avstring.h"
 
 // This is quite experimental, in particular it will mess up the pts values
 // in the queue - on the other hand it might fix some issues like generating
@@ -477,9 +474,11 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
     init_avcodec();
 
     switch (format) {
+    case 0x1600:
     case MKTAG('M', 'P', '4', 'A'):
         codec_id = CODEC_ID_AAC;
         break;
+    case 0x1602:
     case MKTAG('M', 'P', '4', 'L'):
         codec_id = CODEC_ID_AAC_LATM;
         break;
@@ -495,10 +494,15 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
         //codec_id = CODEC_ID_DNET;
         break;
     case MKTAG('E', 'A', 'C', '3'):
+    case MKTAG('e', 'c', '-', '3'):
         codec_id = CODEC_ID_EAC3;
         break;
     case 0x2001:
     case 0x86:
+    case MKTAG('D', 'T', 'S', ' '):
+    case MKTAG('d', 't', 's', ' '):
+    case MKTAG('d', 't', 's', 'b'):
+    case MKTAG('d', 't', 's', 'c'):
         codec_id = CODEC_ID_DTS;
         break;
     case MKTAG('f', 'L', 'a', 'C'):
@@ -526,7 +530,7 @@ static void allocate_parser(AVCodecContext **avctx, AVCodecParserContext **parse
         break;
     }
     if (codec_id != CODEC_ID_NONE) {
-        *avctx = avcodec_alloc_context();
+        *avctx = avcodec_alloc_context3(NULL);
         if (!*avctx)
             return;
         *parser = av_parser_init(codec_id);
@@ -1477,7 +1481,7 @@ double demuxer_get_time_length(demuxer_t *demuxer)
  *        0 otherwise
  * \return the current play time
  */
-int demuxer_get_current_time(demuxer_t *demuxer)
+double demuxer_get_current_time(demuxer_t *demuxer)
 {
     double get_time_ans = 0;
     sh_video_t *sh_video = demuxer->video->sh;
@@ -1485,7 +1489,7 @@ int demuxer_get_current_time(demuxer_t *demuxer)
         get_time_ans = demuxer->stream_pts;
     else if (sh_video)
         get_time_ans = sh_video->pts;
-    return (int) get_time_ans;
+    return get_time_ans;
 }
 
 int demuxer_get_percent_pos(demuxer_t *demuxer)
@@ -1780,6 +1784,50 @@ int demuxer_set_angle(demuxer_t *demuxer, int angle)
     demux_resync(demuxer);
 
     return angle;
+}
+
+int demuxer_audio_lang(demuxer_t *d, int id, char *buf, int buf_len)
+{
+    struct stream_lang_req req;
+    sh_audio_t *sh;
+    if (id < 0 || id >= MAX_A_STREAMS)
+        return -1;
+    sh = d->a_streams[id];
+    if (!sh)
+        return -1;
+    if (sh->lang) {
+        av_strlcpy(buf, sh->lang, buf_len);
+        return 0;
+    }
+    req.type = stream_ctrl_audio;
+    req.id = sh->aid;
+    if (stream_control(d->stream, STREAM_CTRL_GET_LANG, &req) == STREAM_OK) {
+        av_strlcpy(buf, req.buf, buf_len);
+        return 0;
+    }
+    return -1;
+}
+
+int demuxer_sub_lang(demuxer_t *d, int id, char *buf, int buf_len)
+{
+    struct stream_lang_req req;
+    sh_sub_t *sh;
+    if (id < 0 || id >= MAX_S_STREAMS)
+        return -1;
+    sh = d->s_streams[id];
+    if (sh && sh->lang) {
+        av_strlcpy(buf, sh->lang, buf_len);
+        return 0;
+    }
+    req.type = stream_ctrl_sub;
+    // assume 1:1 mapping so we can show the language of
+    // DVD subs even when we have not yet created the stream.
+    req.id = sh ? sh->sid : id;
+    if (stream_control(d->stream, STREAM_CTRL_GET_LANG, &req) == STREAM_OK) {
+        av_strlcpy(buf, req.buf, buf_len);
+        return 0;
+    }
+    return -1;
 }
 
 int demuxer_audio_track_by_lang(demuxer_t *d, char *lang)

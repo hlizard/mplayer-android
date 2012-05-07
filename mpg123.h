@@ -12,7 +12,8 @@
 
 /* A macro to check at compile time which set of API functions to expect.
    This should be incremented at least each time a new symbol is added to the header. */
-#define MPG123_API_VERSION @API_VERSION@
+// #define MPG123_API_VERSION @API_VERSION@
+#define MPG123_API_VERSION 25
 
 /* These aren't actually in use... seems to work without using libtool. */
 #ifdef BUILD_MPG123_DLL

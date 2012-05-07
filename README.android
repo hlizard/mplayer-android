@@ -17,9 +17,14 @@ contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
 #define log2f(x) (logf(x)*1.4426950408889634f)
 
 ChangeLog:
+2012-05-07
+mplayer-r34885-ffmpeg-master(0.11 > ffmpeg > 0.10 )
+       ffmpeg 的 pthread_setcancelstate调用去掉。
 
 2012-05-06
 mplayer-r34007-ffmpeg-0.10
+        * FF_API_READ_SEEK宏的处理。
+        * HAVE_STRPTIME宏的处理。
         * CONFIG_THUMB 宏的处理。
         * 添加取音视频编码信息的函数
 
@@ -29,10 +34,26 @@ mplayer-r34007-ffmpeg-0.9
         × 选择定义宏 HAVE_CBRTF， 否则编译过程大量的“警告”信息
         × 选择定义宏 CONFIG_SAFE_BITSTREAM_READER， 否则编译过程大量的“警告”信息
         * undefined reference to ff_network_*, ff_tls_*，
-              需要在 mplayer/config.mak加添加一行CONFIG_NETWORK=yes, mplayer/config.h加添宏#define HAVE_NETWORK 1
-        × 由于目前没有openssl库，需要禁用ffmpeg自带的ssl功能，在mplayer/config.mak中添加一行 CONFIG_OPENSSL = no, 在mplayer/config.h #define CONFIG_TLS_PROTOCOL 0
-               --disable-protocol=TLS
+              需要在 mplayer/config.mak加添加一行CONFIG_NETWORK=yes, 
+              mplayer/config.h加添宏#define HAVE_NETWORK 1
+        × 由于目前没有openssl库，需要禁用ffmpeg自带的ssl功能，
+              在mplayer/config.mak中添加一行 CONFIG_OPENSSL = no, 
+              在mplayer/config.h #define CONFIG_TLS_PROTOCOL 0
+              --disable-protocol=TLS
 
-        * 从最新的 mplayer-trunk-r34885移植完善了configure脚本，用于使用 --yasm=''的支持，CBRTF检测支持，HAVE_NETWORK宏检测支持, CONFIG_SAFE_BITSTREAM_READER宏的处理。
+        * 从最新的 mplayer-trunk-r34885移植完善了configure脚本，
+              用于使用 --yasm=''的支持，CBRTF检测支持，HAVE_NETWORK宏检测支持, 
+              CONFIG_SAFE_BITSTREAM_READER宏的处理。
 
 
+
+2012-05-02
+mplayer-r34007
+        * 升级到mplayer的这个版本，版本号来自Archlinux对mplayer的打包版本号。
+        * ffmpeg版本需求没有改变。
+
+
+2012-05-01
+mplayer-r33819
+        * ndk-r7 build fix
+        * ffmpeg should be release/0.7/0.8 branch

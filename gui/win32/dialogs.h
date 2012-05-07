@@ -36,10 +36,10 @@
 
 #define MAXFILE 1024
 
-#define COPYRIGHT   "               MPlayer GUI for Windows\n\n" \
-                    "     Copyright (c) 2003 Sascha Sommer\n" \
-                    "     Copyright (c) 2006 Erik Augustson\n" \
-                    "     Copyright (c) 2006 Gianluigi Tiesi"
+#define COPYRIGHT   "MPlayer GUI for Windows\n\n" \
+                    "Copyright (c) 2003 Sascha Sommer\n" \
+                    "Copyright (c) 2006 Erik Augustson\n" \
+                    "Copyright (c) 2006 Gianluigi Tiesi"
 
 #define ONLINE_HELP_URL      "http://www.mplayerhq.hu/DOCS/HTML/en/index.html"
 
@@ -68,8 +68,6 @@
 #define ID_OSD1              34
 #define ID_OSD2              35
 #define ID_OSD3              36
-#define ID_DVDDEVICE         37
-#define ID_CDDEVICE          38
 #define ID_PRIO              39
 #define ID_URL               40
 #define ID_TITLESEL          41
@@ -118,10 +116,11 @@
 #define ID_ASPECT2           84
 #define ID_ASPECT3           85
 #define ID_ASPECT4           86
-#define ID_SUBWINDOW         87
+#define ID_VIDEOWINDOW       87
 #define ID_TIMER             88
 #define ID_MUTE              89
 #define ID_FULLSCREEN        90
+#define ID_IDLE              91
 
 /* gtk emulation */
 #define GTK_MB_FATAL         0x1

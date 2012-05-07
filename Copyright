@@ -15,7 +15,7 @@ license details are listed below:
 Name:       FFmpeg
 Version:    Subversion HEAD
 URL:        http://www.ffmpeg.org
-Directory:  libavcodec, libavformat, libavutil, libpostproc
+Directory:  ffmpeg
 Copyright:  Many, see individual files for copyright notices.
 License:    GNU Lesser General Public License, some parts GNU General Public
             License, GNU General Public License when combined
@@ -177,4 +177,11 @@ URL:        http://code.google.com/p/libass/
 Directory:  libass/
 Copyright:  2006 Evgeniy Stepanov <eugeni.stepanov@gmail.com>
             2009 Grigori Goronzy <greg@geekmind.org>
+License:    GNU General Public License
+
+Name:       Icons
+Version:    2012-01-07
+URL:        http://www.andreasn.se
+Directory:  etc/
+Copyright:  Andreas Nilsson <andreas@andreasn.se>
 License:    GNU General Public License

@@ -596,7 +596,7 @@ static const char help_text[]=
 #define MSGTR_MENU_PlayList MSGTR_PlayList
 #define MSGTR_MENU_SkinBrowser "Переглядач жупанів"
 #define MSGTR_MENU_Preferences MSGTR_Preferences
-#define MSGTR_MENU_Exit "Вихід..."
+#define MSGTR_MENU_Exit "Вихід"
 #define MSGTR_MENU_Mute "Тиша"
 #define MSGTR_MENU_Original "Вихідний"
 #define MSGTR_MENU_AspectRatio "Відношення сторін"
@@ -928,7 +928,6 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] Не можу вивести прийнятний SDL Mode.\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode: Збій SDL_SetVideoMode: %s.\n"
-#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode: Збій SDL_SetVideoMode: %s.\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] Показую I420 у IYUV.\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] Формат картинки не підтримується (0x%X).\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] Інфо - спробуйте -vm чи -zoom щоб перейти до найкращої роздільної здатності.\n"

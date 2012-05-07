@@ -1,6 +1,6 @@
-// Synced with help_mp-en.h rev. 33962
+// Synced with help_mp-en.h rev. 34785
 //
-// Translated by JRaSH <jrash06@163.com>
+// Translated by JRaSH <jrash06@gmail.com>
 
 
 
@@ -177,6 +177,17 @@ static const char help_text[]=
 #define MSGTR_MenuCall "菜单调用\n"
 #define MSGTR_MasterQuit "选项 -udp-slave：因主动方中止而中止\n"
 #define MSGTR_InvalidIP "选项 -udp-ip：无效的 IP 地址\n"
+#define MSGTR_Forking "正在创建子进程...\n"
+#define MSGTR_Forked "已经创建子进程...\n"
+#define MSGTR_CouldntStartGdb "无法启动 gdb\n"
+#define MSGTR_CouldntFork "无法创建子进程\n"
+#define MSGTR_FilenameTooLong "文件名太长，无法加载用于特定文件或目录的配置文件\n"
+#define MSGTR_AudioDeviceStuck "音频设备已堵塞！\n"
+#define MSGTR_AudioOutputTruncated "音频输入信号在尾端截断。\n"
+#define MSGTR_ASSCannotAddVideoFilter "ASS：无法添加视频过滤器\n"
+#define MSGTR_PtsAfterFiltersMissing "缺失过滤器后的 PTS\n"
+#define MSGTR_CommandLine "命令行："
+#define MSGTR_MenuInitFailed "菜单初始化失败。\n"
 
 // --- edit decision lists
 #define MSGTR_EdlOutOfMem "无法分配足够的内存以存放 EDL 数据。\n"
@@ -562,7 +573,7 @@ static const char help_text[]=
 #define MSGTR_NEMFMR "抱歉，没有足够的内存用于菜单渲染。"
 #define MSGTR_IDFGCVD "抱歉，未找到与 GUI 兼容的视频输出驱动。\n"
 #define MSGTR_NEEDLAVC "抱歉，未重新编码前无法用你的 DXR3/H+ 设备播放非 MPEG 文件。\n请启用 DXR3/H+ 配置盒中的 lavc 编解码器。"
-#define MSGTR_ICONERROR "图标‘%s’未找到或格式不支持。\n"
+#define MSGTR_ICONERROR "未找到图标‘%s’（大小为 %d）或格式不支持。\n"
 
 // --- skin loader error messages
 #define MSGTR_SKIN_ERRORMESSAGE "界面外观配置文件错误，行 %d：%s"
@@ -594,6 +605,7 @@ static const char help_text[]=
 #define MSGTR_MENU_AboutMPlayer "关于 MPlayer"
 #define MSGTR_MENU_Open "打开..."
 #define MSGTR_MENU_PlayFile "播放文件..."
+#define MSGTR_MENU_PlayCD "播放 CD..."
 #define MSGTR_MENU_PlayVCD "播放 VCD..."
 #define MSGTR_MENU_PlayDVD "播放 DVD..."
 #define MSGTR_MENU_PlayURL "播放网络链接..."
@@ -611,6 +623,7 @@ static const char help_text[]=
 #define MSGTR_MENU_NormalSize "正常尺寸"
 #define MSGTR_MENU_DoubleSize "双倍尺寸"
 #define MSGTR_MENU_FullScreen "全屏"
+#define MSGTR_MENU_CD "CD"
 #define MSGTR_MENU_DVD "DVD"
 #define MSGTR_MENU_VCD "VCD"
 #define MSGTR_MENU_PlayDisc "打开光盘..."
@@ -625,7 +638,7 @@ static const char help_text[]=
 #define MSGTR_MENU_PlayList MSGTR_PlayList
 #define MSGTR_MENU_SkinBrowser "界面外观配置浏览器"
 #define MSGTR_MENU_Preferences MSGTR_Preferences
-#define MSGTR_MENU_Exit "退出..."
+#define MSGTR_MENU_Exit "退出"
 #define MSGTR_MENU_Mute "静音"
 #define MSGTR_MENU_Original "原始的"
 #define MSGTR_MENU_AspectRatio "宽高比"
@@ -810,6 +823,35 @@ static const char help_text[]=
 #define MSGTR_WS_NotAFile "这好像不是一个文件...\n"
 #define MSGTR_WS_DDNothing "D&D：未返回任何东西！\n"
 
+// Win32 GUI
+#define MSGTR_Close "关闭"
+#define MSGTR_Default "默认值"
+#define MSGTR_Down "向下"
+#define MSGTR_Load "加载"
+#define MSGTR_Save "保存"
+#define MSGTR_Up "向上"
+#define MSGTR_DirectorySelect "选择目录..."
+#define MSGTR_PlaylistSave "保存播放列表..."
+#define MSGTR_PlaylistSelect "选择播放列表..."
+#define MSGTR_SelectTitleChapter "选择标题/章节..."
+#define MSGTR_MENU_DebugConsole "调试控制终端"
+#define MSGTR_MENU_OnlineHelp "线上帮助内容"
+#define MSGTR_MENU_PlayDirectory "播放目录内容..."
+#define MSGTR_MENU_SeekBack "向后定位"
+#define MSGTR_MENU_SeekForw "向前定位"
+#define MSGTR_MENU_ShowHide "显示/隐藏"
+#define MSGTR_MENU_SubtitlesOnOff "显示字幕开/关"
+#define MSGTR_PLAYLIST_AddFile "添加文件..."
+#define MSGTR_PLAYLIST_AddURL "添加 URL..."
+#define MSGTR_PREFERENCES_Priority "进程优先级："
+#define MSGTR_PREFERENCES_PriorityHigh "高"
+#define MSGTR_PREFERENCES_PriorityLow "低"
+#define MSGTR_PREFERENCES_PriorityNormal "标准"
+#define MSGTR_PREFERENCES_PriorityNormalAbove "高于标准"
+#define MSGTR_PREFERENCES_PriorityNormalBelow "低于标准"
+#define MSGTR_PREFERENCES_ShowInVideoWin "在视频窗口中显示（仅用于 DirectX）"
+
+
 // ======================= video output drivers ========================
 
 #define MSGTR_VOincompCodec "所选的视频输出设备与该编解码器不兼容。\n"\
@@ -963,7 +1005,6 @@ static const char help_text[]=
 // vo_sdl.c
 #define MSGTR_LIBVO_SDL_CouldntGetAnyAcceptableSDLModeForOutput "[VO_SDL] 无法获得可接受的 SDL 模式以用于输出。\n"
 #define MSGTR_LIBVO_SDL_SetVideoModeFailed "[VO_SDL] set_video_mode：SDL_SetVideoMode 失败：%s。\n"
-#define MSGTR_LIBVO_SDL_SetVideoModeFailedFull "[VO_SDL] Set_fullmode：SDL_SetVideoMode 失败：%s。\n"
 #define MSGTR_LIBVO_SDL_MappingI420ToIYUV "[VO_SDL] 将 I420 映射到 IYUV。\n"
 #define MSGTR_LIBVO_SDL_UnsupportedImageFormat "[VO_SDL] 不支持的图像格式（0x%X）。\n"
 #define MSGTR_LIBVO_SDL_InfoPleaseUseVmOrZoom "[VO_SDL] 信息 - 请使用 -vm 或 -zoom 切换到最佳分辨率。\n"
@@ -1200,35 +1241,11 @@ static const char help_text[]=
 
 // ao_sun.c
 #define MSGTR_AO_SUN_RtscSetinfoFailed "[AO SUN] rtsc：SETINFO 失败。\n"
+#define MSGTR_AO_SUN_RtscWriteFailed "[AO SUN] rtsc：写入失败。\n"
 #define MSGTR_AO_SUN_CantOpenAudioDev "[AO SUN] 无法打开音频设备 %s，%s  -> nosound。\n"
 #define MSGTR_AO_SUN_UnsupSampleRate "[AO SUN] 音频设置：你的声卡不支持 %d 声道，%s，%d Hz 采样率。\n"
 #define MSGTR_AO_SUN_CantUseSelect "[AO SUN]\n   ***  你的音频驱动不支持 select()  ***\n需要在 config.h 中设置 #undef HAVE_AUDIO_SELECT 并重新编译 MPlayer！\n\n"
 #define MSGTR_AO_SUN_CantReopenReset "[AO SUN]\n致命错误：*** 无法重新打开/重启音频设备（%s）***\n"
-
-// ao_alsa5.c
-#define MSGTR_AO_ALSA5_InitInfo "[AO ALSA5] alsa-init：所请求格式：%d Hz，%d 声道，%s\n"
-#define MSGTR_AO_ALSA5_SoundCardNotFound "[AO ALSA5] alsa-init：未找到声卡。\n"
-#define MSGTR_AO_ALSA5_InvalidFormatReq "[AO ALSA5] alsa-init：所请求格式无效（%s）- 禁用音频输出。\n"
-#define MSGTR_AO_ALSA5_PlayBackError "[AO ALSA5] alsa-init：打开播放模式错误：%s\n"
-#define MSGTR_AO_ALSA5_PcmInfoError "[AO ALSA5] alsa-init：PCM 信息错误：%s\n"
-#define MSGTR_AO_ALSA5_SoundcardsFound "[AO ALSA5] alsa-init：找到声卡 %d，使用：%s\n"
-#define MSGTR_AO_ALSA5_PcmChanInfoError "[AO ALSA5] alsa-init：PCM 声道信息错误：%s\n"
-#define MSGTR_AO_ALSA5_CantSetParms "[AO ALSA5] alsa-init：设定参数错误：%s\n"
-#define MSGTR_AO_ALSA5_CantSetChan "[AO ALSA5] alsa-init：设定声道错误：%s\n"
-#define MSGTR_AO_ALSA5_ChanPrepareError "[AO ALSA5] alsa-init：准备声道错误：%s\n"
-#define MSGTR_AO_ALSA5_DrainError "[AO ALSA5] alsa-uninit：播放数据清空错误：%s\n"
-#define MSGTR_AO_ALSA5_FlushError "[AO ALSA5] alsa-uninit：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_PcmCloseError "[AO ALSA5] alsa-uninit：PCM 关闭错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetDrainError "[AO ALSA5] alsa-reset：播放数据清空错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetFlushError "[AO ALSA5] alsa-reset：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_ResetChanPrepareError "[AO ALSA5] alsa-reset：声道准备错误：%s\n"
-#define MSGTR_AO_ALSA5_PauseDrainError "[AO ALSA5] alsa-pause：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_PauseFlushError "[AO ALSA5] alsa-pause：播放数据刷新错误：%s\n"
-#define MSGTR_AO_ALSA5_ResumePrepareError "[AO ALSA5] alsa-resume：声道准备错误：%s\n"
-#define MSGTR_AO_ALSA5_Underrun "[AO ALSA5] alsa-play：alsa 输出滞后，重新设置音频流。\n"
-#define MSGTR_AO_ALSA5_PlaybackPrepareError "[AO ALSA5] alsa-play：播放准备错误：%s\n"
-#define MSGTR_AO_ALSA5_WriteErrorAfterReset "[AO ALSA5] alsa-play：重置后写入错误：%s - 放弃。\n"
-#define MSGTR_AO_ALSA5_OutPutError "[AO ALSA5] alsa-play：输出错误：%s\n"
 
 // ao_alsa.c
 #define MSGTR_AO_ALSA_InvalidMixerIndexDefaultingToZero "[AO_ALSA] 无效的混音器索引号。取默认值 0。\n"
@@ -1453,6 +1470,8 @@ static const char help_text[]=
 #define MSGTR_MPDEMUX_AVIHDR_IdxFileSaved "已保存索引文件：%s\n"
 
 // demux_audio.c
+#define MSGTR_MPDEMUX_AUDIO_BadID3v2TagSize "音频分离器：ID3v2 标签大小异常：大于流的长度（%u）。\n"
+#define MSGTR_MPDEMUX_AUDIO_DamagedAppendedID3v2Tag "音频分离器：检测到末尾中的 ID3v2 标签已损坏。\n"
 #define MSGTR_MPDEMUX_AUDIO_UnknownFormat "音频流分解器：未知格式 %d。\n"
 
 // demux_demuxers.c
@@ -1722,12 +1741,12 @@ static const char help_text[]=
 
 // ================================== stream ====================================
 
-// ai_alsa1x.c
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetSamplerate "无法设置采样率。\n"
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetBufferTime "无法设置缓冲时间。\n"
-#define MSGTR_MPDEMUX_AIALSA1X_CannotSetPeriodTime "无法设置采样间隔时间。\n"
+// ai_alsa.c
+#define MSGTR_MPDEMUX_AIALSA_CannotSetSamplerate "无法设置采样率。\n"
+#define MSGTR_MPDEMUX_AIALSA_CannotSetBufferTime "无法设置缓冲时间。\n"
+#define MSGTR_MPDEMUX_AIALSA_CannotSetPeriodTime "无法设置采样间隔时间。\n"
 
-// ai_alsa1x.c / ai_alsa.c
+// ai_alsa.c
 #define MSGTR_MPDEMUX_AIALSA_PcmBrokenConfig "该 PCM 的配置文件已损坏：无可用配置。\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableAccessType "无可用访问类型。\n"
 #define MSGTR_MPDEMUX_AIALSA_UnavailableSampleFmt "无可用采样格式。\n"

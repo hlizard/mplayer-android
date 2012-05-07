@@ -43,8 +43,10 @@
 #include "parser-cfg.h"
 #include "sub/spudec.h"
 #include "version.h"
+#include "sub/ass_mp.h"
 #include "sub/vobsub.h"
 #include "sub/av_sub.h"
+#include "sub/sub_cc.h"
 #include "libmpcodecs/dec_teletext.h"
 #include "libavutil/intreadwrite.h"
 #include "m_option.h"
@@ -53,7 +55,6 @@
 double sub_last_pts = -303;
 
 #ifdef CONFIG_ASS
-#include "sub/ass_mp.h"
 ASS_Track* ass_track = 0; // current track to render
 #endif
 
@@ -181,6 +182,7 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
         if (is_av_sub(type))
             reset_avsub(d_dvdsub->sh);
 #endif
+        subcc_reset();
     }
     // find sub
     if (subdata) {
@@ -240,7 +242,7 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
             if (vo_vobsub || timestamp >= 0)
                 spudec_assemble(vo_spudec, packet, len, timestamp);
         }
-    } else if (is_text_sub(type) || is_av_sub(type) || type == 'd') {
+    } else if (is_text_sub(type) || is_av_sub(type) || type == 'd' || type == 'c') {
         int orig_type = type;
         double endpts;
         if (type == 'd' && !d_dvdsub->demuxer->teletext) {
@@ -285,6 +287,10 @@ void update_subtitles(sh_video_t *sh_video, double refpts, demux_stream_t *d_dvd
                         len -= sublen + 2;
                     }
                 }
+                continue;
+            }
+            if (type == 'c') {
+                subcc_process_data(packet, len);
                 continue;
             }
 #ifdef CONFIG_ASS
@@ -418,7 +424,7 @@ int cfg_inc_verbose(m_option_t *conf)
 
 int cfg_include(m_option_t *conf, const char *filename)
 {
-    return m_config_parse_config_file(mconfig, filename);
+    return m_config_parse_config_file(mconfig, filename, 0);
 }
 
 const m_option_t noconfig_opts[] = {
