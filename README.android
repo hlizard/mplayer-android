@@ -19,6 +19,7 @@ contains this function, just add a line to ffmpeg/libavcodec/aacsbr.c
 ChangeLog:
 2012-05-07
 mplayer-r34885-ffmpeg-master(0.11 > ffmpeg > 0.10 )
+       using commit: 35894ebbf9bef18a31dbb90a8a8818fbdc85a184, (2012-05-10)
        ffmpeg 的 pthread_setcancelstate调用去掉。
 
 2012-05-06

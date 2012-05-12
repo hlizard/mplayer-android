@@ -13,6 +13,16 @@ extern codecs_t *audio_codecs;
 extern int nr_vcodecs;
 extern int nr_acodecs;
 
+#include <math.h>
+
+
+// #define log2f(x) (logf(x)*1.4426950408889634f)
+double log2f(double x) ;
+inline double log2f(double x) 
+{
+    return logf(x)*1.4426950408889634f;
+}
+
 
 char * get_codecs_list(int audioflag) {
     int i;
