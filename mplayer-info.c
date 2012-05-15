@@ -17,11 +17,20 @@ extern int nr_acodecs;
 
 
 // #define log2f(x) (logf(x)*1.4426950408889634f)
+//
 double log2f(double x) ;
 inline double log2f(double x) 
 {
     return logf(x)*1.4426950408889634f;
 }
+// */
+
+// float log2f(float x);
+/*
+float log2f(float x){
+     return (log(x) * 1.44269504088896340736);
+}
+*/
 
 
 char * get_codecs_list(int audioflag) {
