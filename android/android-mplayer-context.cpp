@@ -11,6 +11,10 @@
 MPlayerContext::MPlayerContext()
 {
     this->pre_init();
+
+    //////////
+    this->m_running = false;
+    this->m_flip_count = 0;
 }
 
 MPlayerContext::~MPlayerContext()
@@ -44,6 +48,17 @@ void MPlayerContext::pre_init()
     temp = NULL;
     i = x = 0;
 
+}
+
+
+void MPlayerContext::set_mplayer_running(bool running)
+{
+    this->m_running = running;
+}
+
+void MPlayerContext::vm_attach_thread()
+{
+    this->jniVM->AttachCurrentThread(&this->JavaEnv, NULL);
 }
 
 /*

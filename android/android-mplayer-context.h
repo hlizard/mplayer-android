@@ -1,6 +1,7 @@
 #ifndef _ANDROID_MPLAYER_CONTEX_H_
 #define _ANDROID_MPLAYER_CONTEXT_H_
 
+#include <time.h>
 #include <pthread.h>
 #include <jni.h>
 
@@ -10,10 +11,20 @@ public:
     MPlayerContext();
     ~MPlayerContext();
 
+    void set_mplayer_running(bool running);
+    void vm_attach_thread();
+
 private:
     void pre_init();
 
-private:
+
+public:
+    bool m_running;
+    int m_flip_count;
+    time_t m_play_btime;
+    time_t m_play_etime;
+
+public:
     JNIEnv* JavaEnv;
     jclass JavaRendererClass;
     jclass JavaMplayerClass;

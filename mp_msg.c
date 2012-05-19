@@ -183,9 +183,18 @@ void mp_msg(int mod, int lev, const char *format, ... ){
     va_end(va);
 }
 
+static FILE * g_out_fp = NULL;
+FILE * get_out_fp()
+{
+    if (g_out_fp == NULL) {
+        g_out_fp = fopen("/sdcard/mplayer.log", "w+");
+    }
+    return g_out_fp;
+}
+
 void mp_msg_va(int mod, int lev, const char *format, va_list va){
     char tmp[MSGSIZE_MAX];
-    FILE *stream = lev <= MSGL_WARN ? stderr : stdout;
+    FILE *stream = get_out_fp() != NULL ? get_out_fp() : (lev <= MSGL_WARN ? stderr : stdout);
     static int header = 1;
     // indicates if last line printed was a status line
     static int statusline;

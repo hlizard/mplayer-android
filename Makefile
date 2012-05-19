@@ -654,7 +654,7 @@ SRCS_MPLAYER = command.c \
                input/input.c \
                libao2/ao_mpegpes.c \
                android/android-mplayer-context.cpp android/new-android-mplayer.cpp \
-               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c mplayer-info.c \
+               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c mplayer-info.c  \
                libao2/ao_pcm.c \
                libao2/audio_out.c \
                libvo/aspect.c \

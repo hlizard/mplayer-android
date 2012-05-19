@@ -4,7 +4,7 @@ export NDKHOME=/opt/android-ndk
 export CC="$NDKHOME/toolchains/arm-linux-androideabi-4.4.3/prebuilt/linux-x86/bin/arm-linux-androideabi-gcc --sysroot=/opt/android-ndk/platforms/android-9/arch-arm/"
 
 ANDROID_OBJS="./libmpdemux/demux_realaud.o libmpcodecs/ad_mpg123.o libmpcodecs/ad_faad.o libvo/vo_android.o android-mplayer.o mplayer-info.o test.c  libmpcodecs/vd_h264.o libmpcodecs/vd_divx.o"
-ANDROID_OBJS=" android/android-mplayer-context.o android/new-android-mplayer.o mplayer-info.o"
+ANDROID_OBJS="  android/android-mplayer-context.o android/new-android-mplayer.o mplayer-info.o"
 
  
 $CC --shared -o libmplayer.so  $ANDROID_OBJS  \
