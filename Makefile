@@ -641,6 +641,9 @@ SRCS_MPLAYER-$(XVR100)        += libvo/vo_xvr100.c
 SRCS_MPLAYER-$(YUV4MPEG)      += libvo/vo_yuv4mpeg.c
 SRCS_MPLAYER-$(ZR)            += libvo/jpeg_enc.c libvo/vo_zr.c libvo/vo_zr2.c
 
+
+#				# 	android-mplayer.c mplayer-info.c 
+
 SRCS_MPLAYER = command.c \
                m_property.c \
                mixer.c \
@@ -650,7 +653,8 @@ SRCS_MPLAYER = command.c \
                pnm_loader.c \
                input/input.c \
                libao2/ao_mpegpes.c \
-               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c android-mplayer.c mplayer-info.c \
+               android/android-mplayer-context.cpp android/new-android-mplayer.cpp \
+               libao2/ao_null.c libao2/ao_sdl.c libvo/vo_android.c mplayer-info.c \
                libao2/ao_pcm.c \
                libao2/audio_out.c \
                libvo/aspect.c \
@@ -778,7 +782,7 @@ all: $(ALL_PRG-yes)
 	$(CC) $(CC_DEPFLAGS) $(CFLAGS) -c -o $@ $<
 
 %.o: %.cpp
-	$(CC) $(CC_DEPFLAGS) $(CXXFLAGS) -c -o $@ $<
+	$(CXX) $(CC_DEPFLAGS) $(CXXFLAGS) -c -o $@ $<
 
 %.o: %.m
 	$(CC) $(CC_DEPFLAGS) $(CFLAGS) -c -o $@ $<

@@ -7719,7 +7719,7 @@ libs_mplayer=$ld_tmp
 
 CFLAGS="$CFLAGS -D_LARGEFILE_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE64_SOURCE"
 
-CXXFLAGS=" $CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS"
+CXXFLAGS=" $CFLAGS -D__STDC_CONSTANT_MACROS -D__STDC_FORMAT_MACROS -D__STDC_LIMIT_MACROS -fno-exceptions "
 
 # This must be the last test to be performed. Any other tests following it
 # could fail due to linker errors. libdvdnavmini is intentionally not linked
@@ -7984,7 +7984,7 @@ CONFDIR = \$(DESTDIR)$_confdir
 AR      = $_ar
 AS      = $_cc
 CC      = $_cc
-CXX     = $_cc
+CXX     = $(echo $_cc | sed 's/gcc/g++/')
 HOST_CC = $_host_cc
 INSTALL = $_install
 INSTALLSTRIP = $_install_strip
@@ -8003,7 +8003,7 @@ CFLAGS_STACKREALIGN      = $cflags_stackrealign
 CFLAGS_SVGALIB_HELPER    = $cflags_svgalib_helper
 CFLAGS_TREMOR_LOW        = $cflags_tremor_low
 
-EXTRALIBS          = $extra_ldflags $ld_static $extra_libs $extra_libs -L./extlib -lfaad2 -lmpg123 -lsdl-1.2 -lneon -ltag
+EXTRALIBS          = $extra_ldflags $ld_static $extra_libs $extra_libs -L./extlib -lfaad2 -lmpg123 -lsdl-1.2 -lneon -ltag -lstdc++
 EXTRALIBS_MPLAYER  = $libs_mplayer
 EXTRALIBS_MENCODER = $libs_mencoder
 
