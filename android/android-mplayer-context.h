@@ -24,6 +24,9 @@ public:
     time_t m_play_btime;
     time_t m_play_etime;
 
+    int argc;
+    char **argv;
+
 public:
     JNIEnv* JavaEnv;
     jclass JavaRendererClass;

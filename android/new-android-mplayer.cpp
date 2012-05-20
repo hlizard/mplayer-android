@@ -187,14 +187,21 @@ extern "C" {
     }
 
     extern int main(int argc, const char*argv[]);
-    void mplayer_main_process(void) {
+    static void * mplayer_main_process(void *args) {
         // jniVM->AttachCurrentThread(jniVM, &JavaEnv, NULL);
-        int argc = 10;
         const char *argv[] = { "mplayer","-idle","-slave",
                                "-osdlevel","0","-vf",
-                               "format=bgr16","-noaspect",
-                               "-nocorrect-pts",  "-quiet"   // "log=3"        // ,"-quiet"
+                               "format=bgr16","-noaspect"
+                               , "-nocorrect-pts",  "-quiet"   // "log=3"        // ,"-quiet"
+                               , "-identify"
+                               // , "-autosync", "30" 
+                               , "-framedrop"
+                                , "-fps", "23"
+                               // , "-zoom", "-xy", "600"
+                               // , "-vfm", "ffmpeg"
+                               // , "-lavdopts", "lowres=1:fast:skiploopfilter=all"
         };
+        int argc = sizeof(argv)/sizeof(argv[0]); // 12;
     
         __android_log_print(ANDROID_LOG_ERROR, "MPlayer", "Starting mplayer_main...");
         mp_ctx->set_mplayer_running(false);
@@ -237,7 +244,7 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
     mp_ctx->jniVM = vm;
     mp_ctx->jniVM->AttachCurrentThread(&mp_ctx->JavaEnv, NULL);
 
-    pthread_create(&mp_ctx->native_thread, NULL, (void* (*)(void*))mplayer_main_process, NULL);
+    pthread_create(&mp_ctx->native_thread, NULL, mplayer_main_process, NULL);
 
     return JNI_VERSION_1_2;
 }
@@ -264,6 +271,29 @@ extern "C" {
 #define JNI_PARAMS    JNIEnv *env, jobject obj 
 
 ////////// called from java 
+    DEF_JNI_FUNC(jint, startupPlayer)(JNI_PARAMS, jstring jparams)
+    {
+        qlog("startuping player.");
+        mp_ctx->vm_attach_thread();
+
+        char *args[100];
+        const char *params;
+        const char *s, *p, *p1;
+        
+        params = mp_ctx->JavaEnv->GetStringUTFChars(jparams, NULL);
+        s = params;
+        
+
+        pthread_create(&mp_ctx->native_thread, NULL, mplayer_main_process, NULL);
+    }
+
+    DEF_JNI_FUNC(jint, shutdownPlayer)(JNI_PARAMS)
+    {
+        qlog("shutdowning player.");
+        run_command_android("quit");
+        pthread_exit(&mp_ctx->native_thread);
+    }
+
     JNIEXPORT void JNICALL Java_com_vnd_mplayer_PlasmaView_init(JNIEnv *env, jobject  obj,jint delay)
     {
         // (*jniVM)->AttachCurrentThread(jniVM, &JavaEnv, NULL);

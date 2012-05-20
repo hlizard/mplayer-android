@@ -9,6 +9,17 @@ echo $CC
     --enable-networking      \
     --language=en --language-msg=en --language-man=en --language-doc=en --disable-langinfo
 
+#    --enable-real        
+#    --enable-neon            
+#    --enable-armv6t2 --enable-armvfp --enable-iwmmxt    
+ 
+ 
+# --enable-neon
+# --enable-armv6t2
+# --disable-real
+#  --disable-armvfp
+
+
 if [ ! -f ./help_mp.h ] ; then
     ./help/help_create.sh ./help/help_mp-en.h utf8
 fi
