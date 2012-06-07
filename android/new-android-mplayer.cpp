@@ -189,7 +189,7 @@ extern "C" {
     extern int main(int argc, const char*argv[]);
     static void * mplayer_main_process(void *args) {
         // jniVM->AttachCurrentThread(jniVM, &JavaEnv, NULL);
-        const char *argv[] = { "mplayer","-idle","-slave",
+        const char *argv[] = { "mplayer","-idle","-slave", "-v",
                                "-osdlevel","0","-vf",
                                "format=bgr16","-noaspect"
                                , "-nocorrect-pts",  "-quiet"   // "log=3"        // ,"-quiet"

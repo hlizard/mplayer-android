@@ -7,14 +7,14 @@ echo $CC
     --disable-protocol=TLS   \
     --yasm=''                \
     --enable-networking      \
-    --disable-armv5te         \
-    --disable-armv6         \
-    --enable-neon          \
-    --enable-armv6t2      \
-    --enable-armvfp          \
-    --enable-vfpv3          \
-    --enable-iwmmxt      \
-    --enable-thumb      \
+    --disable-neon          \
+    --disable-armv6t2      \
+    --disable-armvfp          \
+    --disable-vfpv3          \
+    --disable-iwmmxt      \
+    --disable-thumb      \
+    --enable-faac      \
+    --enable-faac-lavc \
     --disable-sctp       \
     --language=en --language-msg=en --language-man=en --language-doc=en --disable-langinfo
 
@@ -22,6 +22,9 @@ echo $CC
 #    --enable-neon            
 #    --enable-armv6t2 --enable-armvfp --enable-iwmmxt    
  
+
+#    --disable-armv5te         
+#    --disable-armv6         
  
 # --enable-neon
 # --enable-armv6t2
