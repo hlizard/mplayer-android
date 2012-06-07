@@ -109,7 +109,7 @@ static int preinit(const char *arg)
 
 static uint32_t draw_image(mp_image_t *mpi) {
 if (init==0){
-main_init(mpi->planes);
+mp_main_init(mpi->planes);
 ImageData=(unsigned char *)mpi->planes[0];
 init=1;
 }

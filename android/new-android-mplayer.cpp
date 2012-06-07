@@ -53,7 +53,7 @@ extern "C" {
 
     }
 
-    void main_init(uint8_t *src[])
+    void mp_main_init(uint8_t *src[])
     {
         qlog("here");
         mp_ctx->vm_attach_thread();
